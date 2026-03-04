@@ -1,15 +1,40 @@
 # Omni
 
-A modular, addon-based Discord bot built with TypeScript. Every feature is a plugin - from moderation to economy to custom integrations. Think Bukkit/Spigot, but for Discord.
+A modular, self-hosted Discord bot where every feature is a plugin. Think Bukkit/Spigot, but for Discord.
 
-## Why Omni?
+## Features
 
-Most Discord bots are monolithic - tightly coupled features, hard to extend, impossible to customize without forking. Omni is different:
+### Moderation
+Full moderation suite with `/ban`, `/kick`, `/mute`, `/warn`, `/tempban`, `/slowmode`, `/lock`, punishment `/history`, and `/modlog`. Supports DM notifications, configurable warn thresholds, and automatic tempban expiry.
 
-- **Everything is an addon.** Core features ship as addons. Your custom features are addons. They all use the same API.
-- **Self-hosted.** You own your data. Run it on your own server with SQLite (default) or MySQL.
-- **Developer-first.** A clean addon API with typed config, namespaced databases, permission nodes, inter-addon communication, and hot reload.
-- **Open source.** AGPL-3.0 licensed. Build whatever you want.
+### Giveaways
+Timed giveaways with button entry, automatic winner selection, and rerolls. Supports optional entry requirements like role gates and minimum account age. Use `/giveaway start`, `/giveaway end`, `/giveaway reroll`, `/giveaway list`, and `/giveaway delete`.
+
+### Welcome/Leave
+Customizable welcome and leave messages with auto-roles and member count channels. Configure via `/welcome channel`, `/welcome autorole`, `/welcome membercount`, and preview with `/welcome test`.
+
+### Per-Guild Module Toggle
+Server admins can enable or disable any addon per-guild:
+
+- `/module list` - see all modules and their status
+- `/module enable <name>` - enable a module
+- `/module disable <name>` - disable a module
+
+### Permission Management
+Fine-grained permission control per-role using `/permissions`:
+
+- `/permissions grant <role> <addon> <node>` - grant a permission to a role
+- `/permissions deny <role> <addon> <node>` - deny a permission for a role
+- `/permissions reset <role> <addon> <node>` - revert to default
+- `/permissions list [role]` - show all overrides
+
+Permission nodes autocomplete. Resolution order: database overrides then default Discord permissions. Guild owners bypass all checks.
+
+### Temp Channels
+Auto-creates temporary voice channels when users join a designated hub channel, and auto-deletes them when everyone leaves. Use `/tempchannel sethub`, `/tempchannel removehub`, and `/tempchannel list`. Configurable channel name template and user limit.
+
+### More Coming Soon
+Tickets, leveling, economy, auto-moderation, suggestions, and reaction roles are all in development.
 
 ## Quick Start
 
@@ -64,7 +89,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-## CLI
+### CLI
 
 ```bash
 omni init                    # scaffold project directories
@@ -74,7 +99,13 @@ omni addon create <name>     # scaffold a new addon
 omni addon list              # list installed addons
 ```
 
-## Creating an Addon
+---
+
+## Developer Guide
+
+Everything below is for addon developers who want to extend Omni with custom features.
+
+### Creating an Addon
 
 ```bash
 omni addon create my-addon
@@ -111,7 +142,7 @@ export default class MyAddon extends Addon {
 
 Restart the bot and your addon is live. See `addons/_template/` for a comprehensive reference covering every API feature.
 
-## Addon API
+### Addon API
 
 Every addon receives a `context` object with:
 
@@ -120,7 +151,7 @@ Every addon receives a `context` object with:
 | `logger` | Namespaced logging (`[Omni] [YourAddon] message`) |
 | `commands` | Register slash commands |
 | `events` | Listen to Discord events + custom Omni events |
-| `config` | Persistent JSON config with type-safe get/set |
+| `config` | Persistent YAML config with type-safe get/set |
 | `db` | Namespaced database via Drizzle ORM (SQLite or MySQL) |
 | `permissions` | Define and check custom permission nodes |
 | `addons` | Expose/consume APIs between addons |
@@ -131,9 +162,9 @@ Every addon receives a `context` object with:
 ### Lifecycle
 
 ```
-onLoad()    → Register commands, events, config, schemas
-onEnable()  → Start processes, set up intervals, use inter-addon APIs
-onDisable() → Cleanup (events and commands are auto-cleared)
+onLoad()    - Register commands, events, config, schemas
+onEnable()  - Start processes, set up intervals, use inter-addon APIs
+onDisable() - Cleanup (events and commands are auto-cleared)
 ```
 
 ### Manifest
@@ -178,15 +209,9 @@ if (economy) {
 }
 ```
 
-### Per-Guild Module Toggle
+### Module Self-Gating
 
-Server admins can enable or disable any addon per-guild using the built-in `/module` command:
-
-- `/module list` - see all modules and their status for the current server
-- `/module enable <name>` - enable a module
-- `/module disable <name>` - disable a module
-
-When a module is disabled, its commands are blocked in that guild. Addons can also self-gate their event handlers:
+When a module is disabled via `/module disable`, its commands are automatically blocked. Addons should also self-gate their event handlers:
 
 ```ts
 this.context.events.on('messageCreate', async (message) => {
@@ -198,9 +223,9 @@ this.context.events.on('messageCreate', async (message) => {
 
 ### Hot Reload
 
-Addons can be reloaded without restarting the bot. The core handles: disable → recompile → reload → re-enable → redeploy commands.
+Addons can be reloaded without restarting the bot. The core handles: disable, recompile, reload, re-enable, and redeploy commands.
 
-## Project Structure
+### Project Structure
 
 ```
 omni/
@@ -218,7 +243,7 @@ omni/
 ## Roadmap
 
 - [x] **Phase 1** - Core framework + addon API
-- [ ] **Phase 2** - Built-in addons (moderation, tickets, leveling, economy, giveaways, auto-mod, suggestions, welcome/leave, reaction roles, temp channels)
+- [ ] **Phase 2** - Built-in addons (~~moderation~~, tickets, leveling, economy, ~~giveaways~~, auto-mod, suggestions, ~~welcome/leave~~, reaction roles, ~~temp channels~~)
 - [ ] **Phase 3** - Premium modules (web dashboard, Minecraft integration, music, analytics)
 - [ ] **Phase 4** - Addon marketplace + documentation site
 
