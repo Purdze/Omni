@@ -33,8 +33,38 @@ Permission nodes autocomplete. Resolution order: database overrides then default
 ### Temp Channels
 Auto-creates temporary voice channels when users join a designated hub channel, and auto-deletes them when everyone leaves. Use `/tempchannel sethub`, `/tempchannel removehub`, and `/tempchannel list`. Configurable channel name template and user limit.
 
+### Leveling
+XP-based leveling system where users earn XP by chatting. Features include level-up notifications, role rewards at configurable levels, leaderboards, and manual XP management. Commands:
+
+- `/rank [user]` - view level, XP, progress bar, and server rank
+- `/leaderboard [page]` - top users ordered by XP
+- `/xp set|add|remove <user> <amount>` - manage user XP (requires `leveling.manage`)
+- `/rewards add|remove|list` - configure role rewards at level thresholds (requires `leveling.manage`)
+
+Configurable XP range, cooldown, stack/replace role behavior, and level-up channel.
+
+### Reaction Roles
+Self-assign roles via buttons on staff-created panel messages. Staff create panels with a title and description, then add role buttons with custom labels, emojis, and colors. Members click buttons to toggle roles on/off with ephemeral feedback. Commands:
+
+- `/reactionroles create <channel> <title> [description]` - post a new panel embed
+- `/reactionroles addrole <message_id> <role> [label] [emoji] [style]` - add a role button to a panel
+- `/reactionroles removerole <message_id> <role>` - remove a role button from a panel
+- `/reactionroles delete <message_id>` - delete a panel and its message
+- `/reactionroles list` - list all panels in the server
+
+### Auto-Moderation
+Automated moderation with word/regex filtering, spam detection, link filtering, and anti-raid protection. Features escalating punishments (warn, mute, kick, ban) based on violation count, with optional integration into the moderation addon for unified warning tracking. Commands:
+
+- `/automod wordfilter add|remove|list` - manage word and regex content filters
+- `/automod linkfilter toggle|allowlist|blocklist` - control link filtering with domain lists
+- `/automod spam config` - tune spam detection thresholds (message rate, duplicates, mentions)
+- `/automod raid config` - configure anti-raid (join threshold, lockdown or alert action)
+- `/automod punishments set|remove|list` - configure escalating punishment steps
+- `/automod exempt add|remove|list` - exempt roles or channels from filtering
+- `/automod-status` - view all current auto-mod settings at a glance
+
 ### More Coming Soon
-Tickets, leveling, economy, auto-moderation, suggestions, and reaction roles are all in development.
+Tickets, economy, and suggestions are all in development.
 
 ## Quick Start
 
@@ -243,7 +273,7 @@ omni/
 ## Roadmap
 
 - [x] **Phase 1** - Core framework + addon API
-- [ ] **Phase 2** - Built-in addons (~~moderation~~, tickets, leveling, economy, ~~giveaways~~, auto-mod, suggestions, ~~welcome/leave~~, reaction roles, ~~temp channels~~)
+- [ ] **Phase 2** - Built-in addons (~~moderation~~, tickets, ~~leveling~~, economy, ~~giveaways~~, ~~auto-mod~~, suggestions, ~~welcome/leave~~, ~~reaction roles~~, ~~temp channels~~)
 - [ ] **Phase 3** - Premium modules (web dashboard, Minecraft integration, music, analytics)
 - [ ] **Phase 4** - Addon marketplace + documentation site
 

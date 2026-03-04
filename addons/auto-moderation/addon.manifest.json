@@ -1,0 +1,16 @@
+{
+  "id": "auto-moderation",
+  "name": "Auto-Moderation",
+  "version": "1.0.0",
+  "description": "Automated moderation with word/regex filtering, spam detection, link filtering, and anti-raid protection",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "auto-moderation.manage",
+      "description": "Configure auto-moderation filters, spam settings, and punishments",
+      "defaultDiscordPermissions": ["ManageGuild"]
+    }
+  ]
+}
