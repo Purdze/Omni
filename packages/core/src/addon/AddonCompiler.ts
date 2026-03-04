@@ -37,7 +37,7 @@ export class AddonCompiler {
       return outDir;
     }
 
-    this.logger.info(`Compiling addon "${addonId}"...`);
+    this.logger.debug(`Compiling addon "${addonId}"...`);
 
     const sourceFiles = this.collectTypeScriptFiles(srcDir);
     if (sourceFiles.length === 0) {
@@ -66,7 +66,7 @@ export class AddonCompiler {
 
     this.writeCacheTimestamp(addonId);
 
-    this.logger.info(
+    this.logger.debug(
       `Addon "${addonId}" compiled successfully (${sourceFiles.length} file(s))`,
     );
 

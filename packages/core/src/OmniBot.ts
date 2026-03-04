@@ -15,6 +15,7 @@ import { CommandDeployer } from './command/CommandDeployer';
 import { CommandGuard } from './command/CommandGuard';
 import { PermissionManager } from './permission/PermissionManager';
 import { AddonConfigManager } from './config/AddonConfigManager';
+import { BotConfigManager } from './config/BotConfigManager';
 import { AddonDatabase } from './database/AddonDatabase';
 import { AddonManager } from './addon/AddonManager';
 import { EmbedFactory } from './embed/EmbedFactory';
@@ -41,7 +42,15 @@ export class OmniBot {
 
   async start(): Promise<void> {
     const configManager = new ConfigManager();
-    this.config = configManager.load(this.projectRoot);
+    try {
+      this.config = configManager.load(this.projectRoot);
+    } catch (err: any) {
+      if (/missing required environment/i.test(err?.message ?? '')) {
+        console.error(`\n  [Omni] ${err.message}\n`);
+        err._omniHandled = true;
+      }
+      throw err;
+    }
 
     this.logger = new Logger(this.config.logLevel);
     const log = this.logger.createLogger('Core');
@@ -64,7 +73,12 @@ export class OmniBot {
       this.config.db,
       this.logger.createLogger('Database'),
     );
-    await this.databaseManager.connect();
+
+    try {
+      await this.databaseManager.connect();
+    } catch (err: any) {
+      this.handleDatabaseError(log, err);
+    }
 
     const eventBus = new EventBus(
       this.client,
@@ -85,7 +99,11 @@ export class OmniBot {
       this.logger.createLogger('PermissionManager'),
     );
 
-    this.embedFactory = new EmbedFactory();
+    const botConfigManager = new BotConfigManager(this.projectRoot);
+    const botConfig = botConfigManager.load();
+    log.debug(`Loaded bot config (brand color: ${botConfig.branding.color})`);
+
+    this.embedFactory = new EmbedFactory(botConfig.branding);
 
     this.moduleManager = new ModuleManager(
       this.databaseManager,
@@ -141,7 +159,12 @@ export class OmniBot {
     });
 
     this.setupShutdown(log);
-    await this.client.login(this.config.token);
+
+    try {
+      await this.client.login(this.config.token);
+    } catch (err: any) {
+      this.handleLoginError(log, err);
+    }
   }
 
   async stop(): Promise<void> {
@@ -320,5 +343,111 @@ export class OmniBot {
     process.on('unhandledRejection', (reason) => {
       log.error('Unhandled rejection', reason as Error);
     });
+  }
+
+  private startupHint(log: ReturnType<Logger['createLogger']>, err: any, message: string, steps: string[]): never {
+    log.error(`${message}\n\n${steps.map((s, i) => `  ${i + 1}. ${s}`).join('\n')}\n`);
+    err._omniHandled = true;
+    throw err;
+  }
+
+  private handleDatabaseError(log: ReturnType<Logger['createLogger']>, err: any): never {
+    const msg = err?.message ?? '';
+
+    if (/could not locate the bindings file/i.test(msg) || /native module/i.test(msg)) {
+      this.startupHint(log, err, 'The better-sqlite3 native module is not built for your platform.', [
+        'Run: pnpm rebuild better-sqlite3',
+        'If that fails, ensure you have build tools installed:\n' +
+        '     - Windows: npm install -g windows-build-tools\n' +
+        '     - macOS: xcode-select --install\n' +
+        '     - Linux: sudo apt install build-essential python3',
+        'Restart Omni',
+      ]);
+    }
+
+    if (/ECONNREFUSED/i.test(msg) || /ENOTFOUND/i.test(msg) || /access denied/i.test(msg)) {
+      this.startupHint(log, err, 'Could not connect to the MySQL database.', [
+        'Verify the database server is running',
+        'Check your .env file: OMNI_DB_HOST, OMNI_DB_PORT, OMNI_DB_USER, OMNI_DB_PASSWORD, OMNI_DB_NAME',
+        'Ensure the database user has access to the specified database',
+        'To switch to SQLite instead, set OMNI_DB_DRIVER=sqlite in .env',
+      ]);
+    }
+
+    if (/mysql2.*not installed/i.test(msg)) {
+      this.startupHint(log, err, 'MySQL driver selected but the mysql2 package is not installed.', [
+        'Install it: pnpm add mysql2',
+        'Or switch to SQLite: set OMNI_DB_DRIVER=sqlite in .env',
+      ]);
+    }
+
+    log.error(`Database connection failed: ${msg}`);
+    throw err;
+  }
+
+  private handleLoginError(log: ReturnType<Logger['createLogger']>, err: any): never {
+    const msg = err?.message ?? '';
+    const code = err?.code;
+    const hint = this.startupHint.bind(this, log, err);
+
+    if (code === 4014 || /disallowed intents/i.test(msg)) {
+      hint('Discord rejected the connection due to disallowed intents.', [
+        'Go to https://discord.com/developers/applications',
+        'Select your bot application',
+        'Navigate to Bot → Privileged Gateway Intents',
+        'Enable: Message Content Intent, Server Members Intent, Presence Intent',
+        'Save and restart Omni',
+      ]);
+    }
+
+    if (code === 4004 || code === 'TokenInvalid' || /invalid token/i.test(msg) || /authentication failed/i.test(msg)) {
+      hint('The bot token is invalid or has been reset.', [
+        'Go to https://discord.com/developers/applications',
+        'Select your bot → Bot → Reset Token',
+        'Copy the new token into your .env file as OMNI_TOKEN=<token>',
+        'Restart Omni',
+      ]);
+    }
+
+    if (code === 4013 || /invalid intents/i.test(msg)) {
+      hint('The bot requested invalid gateway intents.', [
+        'This is likely a bug in Omni — please report it at https://github.com/your-org/omni/issues',
+        'As a workaround, check that your discord.js version is up to date: pnpm update discord.js',
+      ]);
+    }
+
+    if (code === 4011 || /sharding required/i.test(msg)) {
+      hint('Your bot is in too many servers and requires sharding.', [
+        'This means your bot has joined over 2,500 servers',
+        'Sharding support is not yet available in Omni',
+        'See https://discordjs.guide/sharding/ for manual setup',
+      ]);
+    }
+
+    if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
+      hint('Could not reach Discord — DNS resolution failed.', [
+        'Check your internet connection',
+        'If behind a proxy, set the HTTPS_PROXY environment variable',
+        'Try again in a few moments',
+      ]);
+    }
+
+    if (code === 'ECONNREFUSED' || code === 'ECONNRESET' || code === 'ETIMEDOUT') {
+      hint('Could not connect to Discord — the connection was refused or timed out.', [
+        'Check your internet connection and firewall settings',
+        'Discord may be experiencing an outage — check https://discordstatus.com',
+        'If behind a proxy, set the HTTPS_PROXY environment variable',
+      ]);
+    }
+
+    if (err?.status >= 500 || /50[0-9]/i.test(code?.toString() ?? '')) {
+      hint('Discord returned a server error (5xx).', [
+        'Discord may be experiencing an outage — check https://discordstatus.com',
+        'Wait a few minutes and try again',
+      ]);
+    }
+
+    log.error(`Failed to connect to Discord: ${msg}`);
+    throw err;
   }
 }

@@ -14,6 +14,9 @@ importers:
       discord.js:
         specifier: ^14.16.3
         version: 14.25.1
+      drizzle-orm:
+        specifier: ^0.38.3
+        version: 0.38.4(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)(mysql2@3.18.2(@types/node@22.19.13))
 
   packages/cli:
     dependencies:
@@ -51,6 +54,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
+      yaml:
+        specifier: ^2.8.2
+        version: 2.8.2
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.12
@@ -641,6 +647,11 @@ packages:
       utf-8-validate:
         optional: true
 
+  yaml@2.8.2:
+    resolution: {integrity: sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
 snapshots:
 
   '@discordjs/builders@1.13.1':
@@ -1098,3 +1109,5 @@ snapshots:
   wrappy@1.0.2: {}
 
   ws@8.19.0: {}
+
+  yaml@2.8.2: {}

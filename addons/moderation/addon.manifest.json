@@ -1,0 +1,41 @@
+{
+  "id": "moderation",
+  "name": "Moderation",
+  "version": "1.0.0",
+  "description": "Ban, kick, mute, warn, tempban, slowmode, channel lock, punishment history, and audit log",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "moderation.warn",
+      "description": "Warn users and clear warnings",
+      "defaultDiscordPermissions": ["ModerateMembers"]
+    },
+    {
+      "id": "moderation.kick",
+      "description": "Kick users from the server",
+      "defaultDiscordPermissions": ["KickMembers"]
+    },
+    {
+      "id": "moderation.ban",
+      "description": "Ban, tempban, and unban users",
+      "defaultDiscordPermissions": ["BanMembers"]
+    },
+    {
+      "id": "moderation.mute",
+      "description": "Mute and unmute users (timeout)",
+      "defaultDiscordPermissions": ["ModerateMembers"]
+    },
+    {
+      "id": "moderation.history",
+      "description": "View warnings, punishment history, and mod log",
+      "defaultDiscordPermissions": ["ModerateMembers"]
+    },
+    {
+      "id": "moderation.manage",
+      "description": "Manage slowmode and channel locks",
+      "defaultDiscordPermissions": ["ManageChannels"]
+    }
+  ]
+}

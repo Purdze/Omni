@@ -1,0 +1,7 @@
+# Omni Bot Configuration
+
+branding:
+  # Primary embed color (hex)
+  color: "#5865F2"
+  # Footer text shown on all embeds
+  footerText: "Powered by Omni"

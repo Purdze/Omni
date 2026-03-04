@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@omni/core": "workspace:*",
-    "discord.js": "^14.16.3"
+    "discord.js": "^14.16.3",
+    "drizzle-orm": "^0.38.3"
   },
   "engines": {
     "node": ">=20.0.0"

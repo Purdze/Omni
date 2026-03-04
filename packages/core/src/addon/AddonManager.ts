@@ -1,6 +1,6 @@
 import * as path from 'path';
 import type { Client } from 'discord.js';
-import { Addon, type AddonManifest, type AddonLogger } from '../types/addon';
+import { Addon, type AddonLogger } from '../types/addon';
 import { AddonRegistry, type AddonEntry } from './AddonRegistry';
 import { AddonLoader } from './AddonLoader';
 import { AddonCompiler } from './AddonCompiler';
@@ -66,7 +66,7 @@ export class AddonManager {
       return;
     }
 
-    this.log.info(`Found ${discovered.length} addon(s), starting load sequence...`);
+    this.log.info(`Loading ${discovered.length} addon(s)...`);
 
     for (const { manifest, sourceDir } of discovered) {
       try {
@@ -101,6 +101,16 @@ export class AddonManager {
       await this.enableAddon(entry.manifest.id);
     }
 
+    const enabled = this.registry.getAll().filter(a => a.state === 'ENABLED');
+    const failed = this.registry.getAll().filter(a => a.state === 'FAILED');
+    const names = enabled.map(a => a.manifest.name).join(', ');
+
+    if (failed.length > 0) {
+      this.log.info(`${enabled.length} addon(s) ready (${names}), ${failed.length} failed`);
+    } else {
+      this.log.info(`${enabled.length} addon(s) ready (${names})`);
+    }
+
     await this.deployCommands();
   }
 
@@ -132,6 +142,7 @@ export class AddonManager {
 
       const addonLogger = this.deps.logger.createLogger(manifest.name);
       const addonConfig = this.deps.addonConfigManager.createAccess(manifest.id, {});
+      const addonConfigs = this.deps.addonConfigManager.createNamedAccess(manifest.id);
       const addonDb = this.deps.addonDatabase.createAccess(
         manifest.id,
         this.deps.databaseManager.getDb(),
@@ -143,6 +154,7 @@ export class AddonManager {
         logger: addonLogger,
         db: addonDb,
         config: addonConfig,
+        configs: addonConfigs,
         commands: this.deps.commandManager.createRegistrar(manifest.id),
         events: this.deps.eventBus.createSubscriber(manifest.id),
         permissions: this.deps.permissionManager.createAccessor(manifest.id),
@@ -165,7 +177,7 @@ export class AddonManager {
       entry.instance = instance;
       this.registry.setState(manifest.id, 'LOADED');
       this.deps.eventBus.emit('addon:loaded', manifest.id);
-      this.log.info(`Loaded addon: ${manifest.name} v${manifest.version}`);
+      this.log.debug(`Loaded addon: ${manifest.name} v${manifest.version}`);
     } catch (error) {
       this.failAddon(manifest.id, error as Error, `Failed to load addon "${manifest.id}"`);
     }
@@ -179,7 +191,7 @@ export class AddonManager {
       await entry.instance.onEnable();
       this.registry.setState(addonId, 'ENABLED');
       this.deps.eventBus.emit('addon:enabled', addonId);
-      this.log.info(`Enabled addon: ${entry.manifest.name}`);
+      this.log.debug(`Enabled addon: ${entry.manifest.name}`);
     } catch (error) {
       this.failAddon(addonId, error as Error, `Failed to enable addon "${addonId}"`);
     }

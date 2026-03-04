@@ -2,7 +2,7 @@ import type { Client } from 'discord.js';
 import type { AddonContext as IAddonContext, InterAddonAPI, ModuleAccessor } from '../types/addon';
 import type { AddonLogger } from '../types/addon';
 import type { CommandRegistrar } from '../types/command';
-import type { AddonConfigAccess } from '../types/config';
+import type { AddonConfigAccess, NamedConfigAccess } from '../types/config';
 import type { AddonDatabaseAccess } from '../types/database';
 import type { EventSubscriber } from '../types/event';
 import type { PermissionAccessor } from '../types/permission';
@@ -15,6 +15,7 @@ interface AddonContextDeps {
   logger: AddonLogger;
   db: AddonDatabaseAccess;
   config: AddonConfigAccess;
+  configs: NamedConfigAccess;
   commands: CommandRegistrar;
   events: EventSubscriber;
   permissions: PermissionAccessor;
@@ -47,6 +48,7 @@ export function createAddonContext(deps: AddonContextDeps): IAddonContext {
     logger: deps.logger,
     db: deps.db,
     config: deps.config,
+    configs: deps.configs,
     commands: deps.commands,
     events: deps.events,
     permissions: deps.permissions,

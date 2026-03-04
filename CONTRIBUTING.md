@@ -40,7 +40,9 @@ omni/
 │   └── cli/            # CLI scaffolding tool (@omni/cli)
 ├── addons/             # Addons (auto-detected on startup)
 │   └── _template/      # Reference addon — covers every API feature
-├── config/addons/      # Auto-generated addon configs
+├── config/
+│   ├── bot.yml         # Bot-wide branding config (embed color, footer)
+│   └── addons/{id}/    # Per-addon config directories (YAML)
 └── data/               # SQLite database (created at runtime)
 ```
 

@@ -2,9 +2,13 @@ import { Addon } from '@omni/core';
 import { SlashCommandBuilder, ChannelType, type TextChannel } from 'discord.js';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-// Define a typed config interface. The config system auto-creates a JSON file
-// at config/addons/{addonId}.json with these defaults on first load. User edits
-// are preserved across restarts via deep-merge with defaults.
+// Define a typed config interface. The config system auto-creates a YAML file
+// at config/addons/{addonId}/config.yml with these defaults on first load.
+// User edits are preserved across restarts via deep-merge with defaults.
+//
+// For multiple config files (e.g. messages, commands), use named configs:
+//   const messages = this.context.configs.get('messages', MESSAGE_DEFAULTS);
+// This creates config/addons/{addonId}/messages.yml alongside config.yml.
 
 interface MyAddonConfig {
   enabled: boolean;

@@ -1,13 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import type { AddonConfigAccess } from '../types/config';
+import * as YAML from 'yaml';
+import type { AddonConfigAccess, NamedConfigAccess } from '../types/config';
 import type { AddonLogger } from '../types/addon';
 
-/**
- * Deep-merges saved addon config on top of addon-supplied defaults so that
- * new keys introduced in addon updates are automatically available while
- * user customisations are preserved.
- */
 export class AddonConfigManager {
   private readonly configDir: string;
   private readonly logger: AddonLogger;
@@ -21,79 +17,84 @@ export class AddonConfigManager {
     addonId: string,
     defaults: T,
   ): AddonConfigAccess<T> {
-    let config = this.load(addonId, defaults);
-    const configPath = this.getConfigPath(addonId);
+    return this.buildAccess(addonId, 'config', defaults);
+  }
 
-    const access: AddonConfigAccess<T> = {
-      getAll: (): T => {
-        return { ...config };
-      },
-
-      get: <K extends keyof T>(key: K): T[K] => {
-        return config[key];
-      },
-
-      set: <K extends keyof T>(key: K, value: T[K]): void => {
-        config[key] = value;
-        this.persist(configPath, config);
-      },
-
-      reset: (): void => {
-        config = this.deepClone(defaults);
-        this.persist(configPath, config);
-        this.logger.info(`Config for addon "${addonId}" reset to defaults`);
+  createNamedAccess(addonId: string): NamedConfigAccess {
+    return {
+      get: <T extends Record<string, unknown>>(name: string, defaults: T): AddonConfigAccess<T> => {
+        return this.buildAccess(addonId, name, defaults);
       },
     };
+  }
 
-    return access;
+  private buildAccess<T extends Record<string, unknown>>(
+    addonId: string,
+    name: string,
+    defaults: T,
+  ): AddonConfigAccess<T> {
+    const filePath = this.getConfigPath(addonId, name);
+    let config = this.load(addonId, name, filePath, defaults);
+
+    return {
+      getAll: (): T => ({ ...config }),
+      get: <K extends keyof T>(key: K): T[K] => config[key],
+      set: <K extends keyof T>(key: K, value: T[K]): void => {
+        config[key] = value;
+        this.persist(filePath, config);
+      },
+      reset: (): void => {
+        config = this.deepClone(defaults);
+        this.persist(filePath, config);
+        this.logger.info(`Config "${name}" for addon "${addonId}" reset to defaults`);
+      },
+    };
   }
 
   private load<T extends Record<string, unknown>>(
     addonId: string,
+    name: string,
+    filePath: string,
     defaults: T,
   ): T {
-    const configPath = this.getConfigPath(addonId);
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
-    fs.mkdirSync(this.configDir, { recursive: true });
-
-    if (!fs.existsSync(configPath)) {
-      this.persist(configPath, defaults);
-      this.logger.debug(
-        `Created default config for addon "${addonId}" at ${configPath}`,
-      );
+    if (!fs.existsSync(filePath)) {
+      this.persist(filePath, defaults);
+      this.logger.debug(`Created default config "${name}" for addon "${addonId}"`);
       return this.deepClone(defaults);
     }
 
     try {
-      const raw = fs.readFileSync(configPath, 'utf-8');
-      const saved = JSON.parse(raw) as Record<string, unknown>;
-
+      const raw = fs.readFileSync(filePath, 'utf-8');
+      const saved = YAML.parse(raw) as Record<string, unknown>;
       const merged = this.deepMerge(
         this.deepClone(defaults) as Record<string, unknown>,
         saved,
       ) as T;
-
-      this.persist(configPath, merged);
-
+      this.persist(filePath, merged);
       return merged;
     } catch (error) {
       this.logger.warn(
-        `Failed to parse config for addon "${addonId}" at ${configPath}. ` +
-          `Falling back to defaults.`,
+        `Failed to parse config "${name}" for addon "${addonId}". Falling back to defaults.`,
         error as Error,
       );
-      this.persist(configPath, defaults);
+      this.persist(filePath, defaults);
       return this.deepClone(defaults);
     }
   }
 
-  private getConfigPath(addonId: string): string {
-    return path.join(this.configDir, `${addonId}.json`);
+  private getAddonDir(addonId: string): string {
+    return path.join(this.configDir, addonId);
+  }
+
+  private getConfigPath(addonId: string, name: string): string {
+    return path.join(this.getAddonDir(addonId), `${name}.yml`);
   }
 
   private persist(filePath: string, data: Record<string, unknown>): void {
     try {
-      fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+      fs.writeFileSync(filePath, YAML.stringify(data, { indent: 2 }), 'utf-8');
     } catch (error) {
       this.logger.error(`Failed to write config to ${filePath}`, error as Error);
     }
@@ -112,10 +113,7 @@ export class AddonConfigManager {
       const srcVal = source[key];
       const tgtVal = target[key];
 
-      if (
-        this.isPlainObject(srcVal) &&
-        this.isPlainObject(tgtVal)
-      ) {
+      if (this.isPlainObject(srcVal) && this.isPlainObject(tgtVal)) {
         target[key] = this.deepMerge(
           tgtVal as Record<string, unknown>,
           srcVal as Record<string, unknown>,
@@ -124,7 +122,6 @@ export class AddonConfigManager {
         target[key] = srcVal;
       }
     }
-
     return target;
   }
 
@@ -133,10 +130,6 @@ export class AddonConfigManager {
   }
 
   private isPlainObject(value: unknown): value is Record<string, unknown> {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      !Array.isArray(value)
-    );
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 }

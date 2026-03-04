@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "A template showing every Omni addon API feature",
   "author": "Your Name",
-  "main": "src/index.ts",
+  "main": "index.ts",
   "dependencies": [],
   "permissions": [
     {

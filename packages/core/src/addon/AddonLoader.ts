@@ -49,7 +49,7 @@ export class AddonLoader {
         }
 
         discovered.push({ manifest, sourceDir: addonDir });
-        this.logger.info(`Discovered addon: ${manifest.name} (${manifest.id} v${manifest.version})`);
+        this.logger.debug(`Discovered addon: ${manifest.name} (${manifest.id} v${manifest.version})`);
       } catch (error) {
         this.logger.error(`Failed to read manifest for ${entry.name}`, error as Error);
       }

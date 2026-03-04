@@ -1,6 +1,6 @@
 import type { Client } from 'discord.js';
 import type { CommandRegistrar } from './command';
-import type { AddonConfigAccess } from './config';
+import type { AddonConfigAccess, NamedConfigAccess } from './config';
 import type { AddonDatabaseAccess } from './database';
 import type { EventSubscriber } from './event';
 import type { PermissionAccessor, PermissionDefinition } from './permission';
@@ -27,6 +27,7 @@ export interface AddonContext {
   logger: AddonLogger;
   db: AddonDatabaseAccess;
   config: AddonConfigAccess;
+  configs: NamedConfigAccess;
   commands: CommandRegistrar;
   events: EventSubscriber;
   permissions: PermissionAccessor;
