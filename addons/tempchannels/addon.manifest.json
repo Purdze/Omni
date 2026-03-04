@@ -1,0 +1,16 @@
+{
+  "id": "tempchannels",
+  "name": "Temp Channels",
+  "version": "1.0.0",
+  "description": "Auto-create temporary voice channels when users join a hub, auto-delete when empty",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "tempchannels.manage",
+      "description": "Manage temp channel hubs",
+      "defaultDiscordPermissions": ["ManageGuild"]
+    }
+  ]
+}
