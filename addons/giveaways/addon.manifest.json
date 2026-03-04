@@ -1,0 +1,16 @@
+{
+  "id": "giveaways",
+  "name": "Giveaways",
+  "version": "1.0.0",
+  "description": "Timed giveaways with button entry, winner selection, rerolls, and entry requirements",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "giveaways.manage",
+      "description": "Create, end, reroll, and delete giveaways",
+      "defaultDiscordPermissions": ["ManageGuild"]
+    }
+  ]
+}
