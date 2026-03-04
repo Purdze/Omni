@@ -49,11 +49,26 @@ export interface InterAddonAPI {
   isEnabled(addonId: string): boolean;
 }
 
+export interface EmbedField {
+  name: string;
+  value: string;
+  inline?: boolean;
+}
+
+export interface EmbedOptions {
+  fields?: EmbedField[];
+  author?: { name: string; iconURL?: string; url?: string };
+  thumbnail?: string;
+  image?: string;
+  footer?: string;
+  url?: string;
+}
+
 export interface EmbedFactoryAccess {
-  info(title: string, description: string): import('discord.js').EmbedBuilder;
-  success(title: string, description: string): import('discord.js').EmbedBuilder;
-  warning(title: string, description: string): import('discord.js').EmbedBuilder;
-  error(title: string, description: string): import('discord.js').EmbedBuilder;
+  info(title: string, description: string, options?: EmbedOptions): import('discord.js').EmbedBuilder;
+  success(title: string, description: string, options?: EmbedOptions): import('discord.js').EmbedBuilder;
+  warning(title: string, description: string, options?: EmbedOptions): import('discord.js').EmbedBuilder;
+  error(title: string, description: string, options?: EmbedOptions): import('discord.js').EmbedBuilder;
 }
 
 export abstract class Addon {

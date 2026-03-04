@@ -166,9 +166,22 @@ export default class MyAddon extends Addon {
     }
 
     // ── Embeds ──────────────────────────────────────────────────────────
-    // Four branded embed types: info, success, warning, error.
-    // All include the "Powered by Omni" footer and timestamp.
-    // const embed = this.context.embeds.info('Title', 'Description');
+    // Four branded types: info, success, warning, error.
+    // Simple usage:
+    //   const embed = this.context.embeds.info('Title', 'Description');
+    //
+    // With options (fields, author, thumbnail, image, footer, url):
+    //   const embed = this.context.embeds.info('User Info', 'Details below', {
+    //     fields: [
+    //       { name: 'Level', value: '5', inline: true },
+    //       { name: 'XP', value: '1200', inline: true },
+    //     ],
+    //     author: { name: member.displayName, iconURL: member.displayAvatarURL() },
+    //     thumbnail: member.displayAvatarURL(),
+    //     footer: 'My Addon',  // overrides default "Powered by Omni"
+    //   });
+    //
+    // Returns a standard EmbedBuilder — further chaining works too.
 
     // ── Database ────────────────────────────────────────────────────────
     // Omni supports both SQLite and MySQL. Use `context.db.driver` to

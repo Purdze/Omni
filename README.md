@@ -125,7 +125,7 @@ Every addon receives a `context` object with:
 | `permissions` | Define and check custom permission nodes |
 | `addons` | Expose/consume APIs between addons |
 | `modules` | Check if your addon is enabled in a guild |
-| `embeds` | Branded embed builder (info, success, warning, error) |
+| `embeds` | Branded embed builder (info, success, warning, error) with optional fields, author, thumbnail, image |
 | `client` | Discord.js Client instance |
 
 ### Lifecycle
