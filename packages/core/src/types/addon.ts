@@ -19,6 +19,10 @@ export interface AddonManifest {
   permissions?: PermissionDefinition[];
 }
 
+export interface ModuleAccessor {
+  isEnabled(guildId: string): Promise<boolean>;
+}
+
 export interface AddonContext {
   logger: AddonLogger;
   db: AddonDatabaseAccess;
@@ -27,6 +31,7 @@ export interface AddonContext {
   events: EventSubscriber;
   permissions: PermissionAccessor;
   addons: InterAddonAPI;
+  modules: ModuleAccessor;
   client: Client;
   embeds: EmbedFactoryAccess;
 }

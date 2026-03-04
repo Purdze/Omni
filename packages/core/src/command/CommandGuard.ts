@@ -2,6 +2,8 @@ import type { ChatInputCommandInteraction } from 'discord.js';
 import type { OmniCommand } from '../types/command';
 import type { PermissionAccessor } from '../types/permission';
 import type { AddonLogger } from '../types/addon';
+import type { CommandManager } from './CommandManager';
+import type { ModuleManager } from '../module/ModuleManager';
 
 /** Result of a pre-execution guard check. */
 export interface GuardResult {
@@ -12,17 +14,26 @@ export interface GuardResult {
 /**
  * Pre-execution checks that run before every command handler.
  *
- * Checks are evaluated in order: guildOnly, cooldown, then permissions.
+ * Checks are evaluated in order: module enabled, guildOnly, cooldown, then permissions.
  */
 export class CommandGuard {
   /** Outer key: command name, inner key: user ID, value: expiry timestamp (ms). */
   private readonly cooldowns = new Map<string, Map<string, number>>();
 
   private readonly permissions: PermissionAccessor;
+  private readonly commandManager: CommandManager;
+  private readonly moduleManager: ModuleManager;
   private readonly logger: AddonLogger;
 
-  constructor(permissions: PermissionAccessor, logger: AddonLogger) {
+  constructor(
+    permissions: PermissionAccessor,
+    commandManager: CommandManager,
+    moduleManager: ModuleManager,
+    logger: AddonLogger,
+  ) {
     this.permissions = permissions;
+    this.commandManager = commandManager;
+    this.moduleManager = moduleManager;
     this.logger = logger;
   }
 
@@ -30,6 +41,19 @@ export class CommandGuard {
     interaction: ChatInputCommandInteraction,
     command: OmniCommand,
   ): Promise<GuardResult> {
+    if (interaction.guild) {
+      const owner = this.commandManager.findOwner(command.data.name);
+      if (owner && owner !== 'core') {
+        const enabled = await this.moduleManager.isEnabled(interaction.guild.id, owner);
+        if (!enabled) {
+          return {
+            allowed: false,
+            reason: `The **${owner}** module is disabled in this server.`,
+          };
+        }
+      }
+    }
+
     const guildOnly = command.guildOnly ?? true;
     if (guildOnly && !interaction.guild) {
       return {
@@ -68,7 +92,6 @@ export class CommandGuard {
       }
     }
 
-    // Apply cooldown only after all checks pass (right before handler executes)
     if (cooldownSeconds > 0) {
       this.applyCooldown(command.data.name, interaction.user.id, cooldownSeconds);
     }

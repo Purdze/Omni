@@ -6,6 +6,7 @@
   "license": "AGPL-3.0",
   "scripts": {
     "build": "pnpm -r build",
+    "postinstall": "pnpm -r build && cd packages/cli && pnpm link --global || echo '[omni] Could not link CLI globally. Run \"pnpm setup\" then \"cd packages/cli && pnpm link --global\" manually.'",
     "start": "node packages/core/dist/index.js",
     "dev": "tsx packages/core/src/index.ts"
   },

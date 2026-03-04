@@ -15,3 +15,8 @@ export const permissions = mysqlTable('permissions', {
   permissionNode: varchar('permission_node', { length: 255 }).notNull(),
   granted: boolean('granted').notNull(),
 });
+
+export const disabledModules = mysqlTable('disabled_modules', {
+  guildId: varchar('guild_id', { length: 255 }).notNull(),
+  addonId: varchar('addon_id', { length: 255 }).notNull(),
+});

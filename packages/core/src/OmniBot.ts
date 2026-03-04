@@ -1,4 +1,11 @@
-import { Client, GatewayIntentBits, Events, type Interaction } from 'discord.js';
+import {
+  Client,
+  GatewayIntentBits,
+  Events,
+  SlashCommandBuilder,
+  PermissionFlagsBits,
+  type Interaction,
+} from 'discord.js';
 import { Logger } from './logger/Logger';
 import { ConfigManager } from './config/ConfigManager';
 import { DatabaseManager } from './database/DatabaseManager';
@@ -11,6 +18,7 @@ import { AddonConfigManager } from './config/AddonConfigManager';
 import { AddonDatabase } from './database/AddonDatabase';
 import { AddonManager } from './addon/AddonManager';
 import { EmbedFactory } from './embed/EmbedFactory';
+import { ModuleManager } from './module/ModuleManager';
 import type { OmniConfig } from './types/config';
 import * as path from 'path';
 
@@ -23,6 +31,7 @@ export class OmniBot {
   private commandManager!: CommandManager;
   private commandGuard!: CommandGuard;
   private embedFactory!: EmbedFactory;
+  private moduleManager!: ModuleManager;
   private commandLog!: ReturnType<Logger['createLogger']>;
   private readonly projectRoot: string;
 
@@ -78,8 +87,15 @@ export class OmniBot {
 
     this.embedFactory = new EmbedFactory();
 
+    this.moduleManager = new ModuleManager(
+      this.databaseManager,
+      this.logger.createLogger('ModuleManager'),
+    );
+
     this.commandGuard = new CommandGuard(
       permissionManager.createAccessor('core'),
+      this.commandManager,
+      this.moduleManager,
       this.logger.createLogger('CommandGuard'),
     );
 
@@ -103,11 +119,14 @@ export class OmniBot {
       addonDatabase,
       databaseManager: this.databaseManager,
       embedFactory: this.embedFactory,
+      moduleManager: this.moduleManager,
       projectRoot: this.projectRoot,
       token: this.config.token,
       clientId: this.config.clientId,
       devGuildId: this.config.devGuildId,
     });
+
+    this.registerModuleCommand();
 
     this.client.on(Events.InteractionCreate, (interaction) => {
       this.handleInteraction(interaction).catch((err) => {
@@ -151,6 +170,103 @@ export class OmniBot {
     } else {
       await interaction.reply({ embeds: [embed], ephemeral: true });
     }
+  }
+
+  private registerModuleCommand(): void {
+    const data = new SlashCommandBuilder()
+      .setName('module')
+      .setDescription('Enable or disable modules for this server')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+      .addSubcommand((sub) =>
+        sub
+          .setName('list')
+          .setDescription('List all modules and their status'),
+      )
+      .addSubcommand((sub) =>
+        sub
+          .setName('enable')
+          .setDescription('Enable a module in this server')
+          .addStringOption((opt) =>
+            opt
+              .setName('name')
+              .setDescription('The module to enable')
+              .setRequired(true)
+              .setAutocomplete(true),
+          ),
+      )
+      .addSubcommand((sub) =>
+        sub
+          .setName('disable')
+          .setDescription('Disable a module in this server')
+          .addStringOption((opt) =>
+            opt
+              .setName('name')
+              .setDescription('The module to disable')
+              .setRequired(true)
+              .setAutocomplete(true),
+          ),
+      );
+
+    const getEnabledAddons = () =>
+      this.addonManager.getRegistry().getAll().filter((a) => a.state === 'ENABLED');
+
+    this.commandManager.register('core', {
+      data,
+      guildOnly: true,
+      execute: async (interaction) => {
+        const sub = interaction.options.getSubcommand();
+        const guildId = interaction.guild!.id;
+        const allAddons = getEnabledAddons();
+
+        if (sub === 'list') {
+          const disabledSet = new Set(await this.moduleManager.getDisabledModules(guildId));
+          const lines = allAddons.map((a) => {
+            const status = disabledSet.has(a.manifest.id) ? '\u274c Disabled' : '\u2705 Enabled';
+            return `**${a.manifest.name}** (\`${a.manifest.id}\`) — ${status}`;
+          });
+
+          const embed = this.embedFactory.info(
+            'Module Status',
+            lines.length > 0 ? lines.join('\n') : 'No modules loaded.',
+          );
+          await interaction.reply({ embeds: [embed], ephemeral: true });
+          return;
+        }
+
+        const name = interaction.options.getString('name', true);
+        const addon = allAddons.find((a) => a.manifest.id === name);
+        if (!addon) {
+          await interaction.reply({
+            embeds: [this.embedFactory.error('Not Found', `No module found with ID \`${name}\`.`)],
+            ephemeral: true,
+          });
+          return;
+        }
+
+        const enabling = sub === 'enable';
+        await (enabling
+          ? this.moduleManager.enable(guildId, name)
+          : this.moduleManager.disable(guildId, name));
+
+        const embed = enabling
+          ? this.embedFactory.success('Module Enabled', `**${addon.manifest.name}** is now enabled in this server.`)
+          : this.embedFactory.warning('Module Disabled', `**${addon.manifest.name}** is now disabled in this server.`);
+        await interaction.reply({ embeds: [embed], ephemeral: true });
+      },
+      autocomplete: async (interaction) => {
+        const focused = interaction.options.getFocused().toLowerCase();
+        const choices = getEnabledAddons()
+          .filter(
+            (a) =>
+              a.manifest.id.toLowerCase().includes(focused) ||
+              a.manifest.name.toLowerCase().includes(focused),
+          )
+          .slice(0, 25)
+          .map((a) => ({ name: a.manifest.name, value: a.manifest.id }));
+
+        await interaction.respond(choices);
+      },
+    });
   }
 
   private async handleInteraction(interaction: Interaction): Promise<void> {

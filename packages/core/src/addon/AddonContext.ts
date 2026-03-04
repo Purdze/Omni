@@ -1,5 +1,5 @@
 import type { Client } from 'discord.js';
-import type { AddonContext as IAddonContext, InterAddonAPI } from '../types/addon';
+import type { AddonContext as IAddonContext, InterAddonAPI, ModuleAccessor } from '../types/addon';
 import type { AddonLogger } from '../types/addon';
 import type { CommandRegistrar } from '../types/command';
 import type { AddonConfigAccess } from '../types/config';
@@ -8,6 +8,7 @@ import type { EventSubscriber } from '../types/event';
 import type { PermissionAccessor } from '../types/permission';
 import type { EmbedFactoryAccess } from '../types/addon';
 import type { AddonRegistry } from './AddonRegistry';
+import type { ModuleManager } from '../module/ModuleManager';
 
 interface AddonContextDeps {
   addonId: string;
@@ -18,6 +19,7 @@ interface AddonContextDeps {
   events: EventSubscriber;
   permissions: PermissionAccessor;
   registry: AddonRegistry;
+  moduleManager: ModuleManager;
   client: Client;
   embeds: EmbedFactoryAccess;
 }
@@ -35,6 +37,12 @@ export function createAddonContext(deps: AddonContextDeps): IAddonContext {
     },
   };
 
+  const moduleAccessor: ModuleAccessor = {
+    isEnabled: (guildId: string): Promise<boolean> => {
+      return deps.moduleManager.isEnabled(guildId, deps.addonId);
+    },
+  };
+
   return {
     logger: deps.logger,
     db: deps.db,
@@ -43,6 +51,7 @@ export function createAddonContext(deps: AddonContextDeps): IAddonContext {
     events: deps.events,
     permissions: deps.permissions,
     addons: interAddonAPI,
+    modules: moduleAccessor,
     client: deps.client,
     embeds: deps.embeds,
   };

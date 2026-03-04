@@ -17,3 +17,8 @@ export const permissions = sqliteTable('permissions', {
   permissionNode: text('permission_node').notNull(),
   granted: integer('granted', { mode: 'boolean' }).notNull(),
 });
+
+export const disabledModules = sqliteTable('disabled_modules', {
+  guildId: text('guild_id').notNull(),
+  addonId: text('addon_id').notNull(),
+});

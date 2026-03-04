@@ -100,7 +100,7 @@ export class CommandManager {
     };
   }
 
-  private findOwner(name: string): string | undefined {
+  findOwner(name: string): string | undefined {
     for (const [addonId, names] of this.ownership) {
       if (names.has(name)) {
         return addonId;

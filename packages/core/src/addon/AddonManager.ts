@@ -14,6 +14,7 @@ import { AddonConfigManager } from '../config/AddonConfigManager';
 import { AddonDatabase } from '../database/AddonDatabase';
 import { DatabaseManager } from '../database/DatabaseManager';
 import { EmbedFactory } from '../embed/EmbedFactory';
+import { ModuleManager } from '../module/ModuleManager';
 
 interface AddonManagerDeps {
   client: Client;
@@ -26,6 +27,7 @@ interface AddonManagerDeps {
   addonDatabase: AddonDatabase;
   databaseManager: DatabaseManager;
   embedFactory: EmbedFactory;
+  moduleManager: ModuleManager;
   projectRoot: string;
   token: string;
   clientId: string;
@@ -145,6 +147,7 @@ export class AddonManager {
         events: this.deps.eventBus.createSubscriber(manifest.id),
         permissions: this.deps.permissionManager.createAccessor(manifest.id),
         registry: this.registry,
+        moduleManager: this.deps.moduleManager,
         client: this.deps.client,
         embeds: this.deps.embedFactory,
       });

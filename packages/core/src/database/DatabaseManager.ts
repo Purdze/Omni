@@ -142,6 +142,12 @@ export class DatabaseManager {
         permission_node TEXT    NOT NULL,
         granted         INTEGER NOT NULL CHECK(granted IN (0, 1))
       );
+
+      CREATE TABLE IF NOT EXISTS disabled_modules (
+        guild_id  TEXT NOT NULL,
+        addon_id  TEXT NOT NULL,
+        PRIMARY KEY(guild_id, addon_id)
+      );
     `);
   }
 
@@ -165,6 +171,14 @@ export class DatabaseManager {
         role_id         VARCHAR(255) NOT NULL,
         permission_node VARCHAR(255) NOT NULL,
         granted         BOOLEAN      NOT NULL
+      )
+    `);
+
+    await this.mysqlPool.execute(`
+      CREATE TABLE IF NOT EXISTS disabled_modules (
+        guild_id  VARCHAR(255) NOT NULL,
+        addon_id  VARCHAR(255) NOT NULL,
+        PRIMARY KEY(guild_id, addon_id)
       )
     `);
   }

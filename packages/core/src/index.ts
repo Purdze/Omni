@@ -7,6 +7,7 @@ export type {
   AddonState,
   InterAddonAPI,
   EmbedFactoryAccess,
+  ModuleAccessor,
 } from './types/addon';
 export type { OmniCommand, CommandRegistrar } from './types/command';
 export type { AddonConfigAccess, OmniConfig, DatabaseConfig, DatabaseDriver } from './types/config';

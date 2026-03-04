@@ -9,10 +9,12 @@ export function getCoreSchema(driver: DatabaseDriver) {
     return {
       addonRegistry: mysqlSchema.addonRegistry,
       permissions: mysqlSchema.permissions,
+      disabledModules: mysqlSchema.disabledModules,
     };
   }
   return {
     addonRegistry: sqliteSchema.addonRegistry,
     permissions: sqliteSchema.permissions,
+    disabledModules: sqliteSchema.disabledModules,
   };
 }

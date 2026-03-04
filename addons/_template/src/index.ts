@@ -124,9 +124,14 @@ export default class MyAddon extends Addon {
     const { events, addons, logger } = this.context;
 
     // ── Events ──────────────────────────────────────────────────────────
-    // Listen to any Discord.js event (fully typed):
+    // Listen to any Discord.js event (fully typed).
+    // Gate guild events with modules.isEnabled() so server admins can
+    // disable your addon per-guild via /module disable.
     events.on('messageCreate', async (message) => {
       if (message.author.bot) return;
+      if (!message.guild) return;
+      if (!(await this.context.modules.isEnabled(message.guild.id))) return;
+
       if (message.content === '!ping') {
         await message.reply('Pong!');
       }

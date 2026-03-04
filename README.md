@@ -7,7 +7,7 @@ A modular, addon-based Discord bot built with TypeScript. Every feature is a plu
 Most Discord bots are monolithic — tightly coupled features, hard to extend, impossible to customize without forking. Omni is different:
 
 - **Everything is an addon.** Core features ship as addons. Your custom features are addons. They all use the same API.
-- **Self-hosted.** You own your data. Run it on your own server with SQLite — no external databases required.
+- **Self-hosted.** You own your data. Run it on your own server with SQLite (default) or MySQL.
 - **Developer-first.** A clean addon API with typed config, namespaced databases, permission nodes, inter-addon communication, and hot reload.
 - **Open source.** AGPL-3.0 licensed. Build whatever you want.
 
@@ -21,11 +21,12 @@ Most Discord bots are monolithic — tightly coupled features, hard to extend, i
 ### Setup
 
 ```bash
-git clone https://github.com/your-username/omni.git
+git clone https://github.com/Purdze/Omni.git
 cd omni
 pnpm install
-pnpm build
 ```
+
+This installs dependencies, builds the project, and links the `omni` CLI globally. If the global link fails, run `pnpm setup`, open a new terminal, then `cd packages/cli && pnpm link --global`.
 
 Copy `.env.example` to `.env` and fill in your bot token:
 
@@ -33,6 +34,14 @@ Copy `.env.example` to `.env` and fill in your bot token:
 DISCORD_TOKEN=your-bot-token-here
 DISCORD_CLIENT_ID=your-client-id-here
 DISCORD_DEV_GUILD_ID=your-dev-guild-id  # optional, for instant command updates
+
+# Optional: use MySQL instead of SQLite
+# OMNI_DB_DRIVER=mysql
+# OMNI_DB_HOST=localhost
+# OMNI_DB_PORT=3306
+# OMNI_DB_USER=omni
+# OMNI_DB_PASSWORD=
+# OMNI_DB_NAME=omni
 ```
 
 ### Run
@@ -112,9 +121,10 @@ Every addon receives a `context` object with:
 | `commands` | Register slash commands |
 | `events` | Listen to Discord events + custom Omni events |
 | `config` | Persistent JSON config with type-safe get/set |
-| `db` | Namespaced SQLite database via Drizzle ORM |
+| `db` | Namespaced database via Drizzle ORM (SQLite or MySQL) |
 | `permissions` | Define and check custom permission nodes |
 | `addons` | Expose/consume APIs between addons |
+| `modules` | Check if your addon is enabled in a guild |
 | `embeds` | Branded embed builder (info, success, warning, error) |
 | `client` | Discord.js Client instance |
 
@@ -168,6 +178,24 @@ if (economy) {
 }
 ```
 
+### Per-Guild Module Toggle
+
+Server admins can enable or disable any addon per-guild using the built-in `/module` command:
+
+- `/module list` — see all modules and their status for the current server
+- `/module enable <name>` — enable a module
+- `/module disable <name>` — disable a module
+
+When a module is disabled, its commands are blocked in that guild. Addons can also self-gate their event handlers:
+
+```ts
+this.context.events.on('messageCreate', async (message) => {
+  if (!message.guild) return;
+  if (!(await this.context.modules.isEnabled(message.guild.id))) return;
+  // ...
+});
+```
+
 ### Hot Reload
 
 Addons can be reloaded without restarting the bot. The core handles: disable → recompile → reload → re-enable → redeploy commands.
@@ -182,7 +210,7 @@ omni/
 ├── addons/             # All addons live here (auto-detected on startup)
 │   └── _template/      # Reference addon showing every API feature
 ├── config/addons/      # Auto-generated addon config files
-├── data/               # SQLite database (created at runtime)
+├── data/               # SQLite database file (created at runtime)
 ├── .env                # Bot token and settings
 └── docker-compose.yml
 ```
