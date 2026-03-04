@@ -1,0 +1,99 @@
+{
+  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2026-03-04T00:00:00+00:00",
+  "name": "Omni Discord Bot",
+  "author": "omni@example.com",
+  "description": "A modular, addon-based Discord bot built with TypeScript. Every feature is a plugin — from moderation to economy to custom integrations.",
+  "features": null,
+  "docker_images": {
+    "Node.js 20": "ghcr.io/parkervcp/yolks:nodejs_20",
+    "Node.js 22": "ghcr.io/parkervcp/yolks:nodejs_22"
+  },
+  "file_denylist": [],
+  "startup": "npm install -g pnpm && pnpm install --frozen-lockfile && pnpm build && node packages/core/dist/index.js",
+  "config": {
+    "files": "{}",
+    "startup": "{\r\n    \"done\": \"Omni is ready\"\r\n}",
+    "logs": "{}",
+    "stop": "^C"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\napt update\napt install -y git curl\n\ncurl -fsSL https://get.pnpm.io/install.sh | sh -\nexport PNPM_HOME=\"/root/.local/share/pnpm\"\nexport PATH=\"$PNPM_HOME:$PATH\"\n\nif [ \"${USER_UPLOAD}\" == \"true\" ] || [ \"${USER_UPLOAD}\" == \"1\" ]; then\n    echo \"Skipping Git clone — using user-uploaded files.\"\nelse\n    if [ -z \"${GIT_REPO}\" ]; then\n        echo \"Error: No Git repository provided and USER_UPLOAD is not enabled.\"\n        exit 1\n    fi\n\n    if [ -d \"/mnt/server/.git\" ]; then\n        cd /mnt/server\n        git pull\n    else\n        git clone ${GIT_REPO} /mnt/server\n    fi\nfi\n\ncd /mnt/server\npnpm install --frozen-lockfile\npnpm build\n\nif [ ! -f \"/mnt/server/.env\" ] && [ -f \"/mnt/server/.env.example\" ]; then\n    cp /mnt/server/.env.example /mnt/server/.env\nfi\n\necho \"Installation complete.\"",
+      "container": "ghcr.io/parkervcp/installers:debian",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Git Repository",
+      "description": "The Git repository URL to clone Omni from.",
+      "env_variable": "GIT_REPO",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string",
+      "sort": 1,
+      "field_type": "text"
+    },
+    {
+      "name": "User Upload",
+      "description": "Set to true if uploading files manually instead of cloning from Git.",
+      "env_variable": "USER_UPLOAD",
+      "default_value": "false",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:true,false",
+      "sort": 2,
+      "field_type": "text"
+    },
+    {
+      "name": "Discord Bot Token",
+      "description": "Your Discord bot token from the Discord Developer Portal.",
+      "env_variable": "DISCORD_TOKEN",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string",
+      "sort": 3,
+      "field_type": "text"
+    },
+    {
+      "name": "Discord Client ID",
+      "description": "Your Discord application's client ID for slash command deployment.",
+      "env_variable": "DISCORD_CLIENT_ID",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string",
+      "sort": 4,
+      "field_type": "text"
+    },
+    {
+      "name": "Dev Guild ID",
+      "description": "Optional guild ID for instant slash command updates during development.",
+      "env_variable": "DISCORD_DEV_GUILD_ID",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string",
+      "sort": 5,
+      "field_type": "text"
+    },
+    {
+      "name": "Log Level",
+      "description": "Logging verbosity: debug, info, warn, or error.",
+      "env_variable": "LOG_LEVEL",
+      "default_value": "info",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:debug,info,warn,error",
+      "sort": 6,
+      "field_type": "text"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@omni/cli",
+  "version": "0.1.0",
+  "description": "Omni Discord bot CLI tool",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "bin": {
+    "omni": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "chalk": "^4.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2"
+  }
+}

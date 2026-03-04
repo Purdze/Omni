@@ -1,0 +1,16 @@
+{
+  "id": "my-addon",
+  "name": "My Addon",
+  "version": "1.0.0",
+  "description": "A template showing every Omni addon API feature",
+  "author": "Your Name",
+  "main": "src/index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "my-addon.manage",
+      "description": "Manage this addon's settings",
+      "defaultDiscordPermissions": ["ManageGuild"]
+    }
+  ]
+}

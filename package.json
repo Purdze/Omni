@@ -1,0 +1,19 @@
+{
+  "name": "omni",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Modular, addon-based Discord bot",
+  "license": "AGPL-3.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "start": "node packages/core/dist/index.js",
+    "dev": "tsx packages/core/src/index.ts"
+  },
+  "dependencies": {
+    "@omni/core": "workspace:*",
+    "discord.js": "^14.16.3"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+services:
+  omni:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./addons:/app/addons
+      - ./config:/app/config
+      - ./data:/app/data
