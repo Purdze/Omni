@@ -39,7 +39,7 @@ omni/
 │   ├── core/           # Bot runtime, addon API, database, commands (@omni/core)
 │   └── cli/            # CLI scaffolding tool (@omni/cli)
 ├── addons/             # Addons (auto-detected on startup)
-│   └── _template/      # Reference addon — covers every API feature
+│   └── _template/      # Reference addon - covers every API feature
 ├── config/
 │   ├── bot.yml         # Bot-wide branding config (embed color, footer)
 │   └── addons/{id}/    # Per-addon config directories (YAML)
@@ -58,9 +58,9 @@ pnpm start             # or: omni addon create my-addon
 
 Or manually create `addons/my-addon/` with:
 
-- `addon.manifest.json` — metadata, dependencies, permissions
-- `src/index.ts` — a class extending `Addon` from `@omni/core`
-- `tsconfig.json` — extend `../../tsconfig.addon.json`
+- `addon.manifest.json` - metadata, dependencies, permissions
+- `src/index.ts` - a class extending `Addon` from `@omni/core`
+- `tsconfig.json` - extend `../../tsconfig.addon.json`
 
 See `addons/_template/` for a comprehensive reference covering commands, events, config, database, permissions, inter-addon APIs, and embeds.
 
@@ -71,7 +71,7 @@ See `addons/_template/` for a comprehensive reference covering commands, events,
 - **Use the permission system.** Define permission nodes in your manifest for any privileged commands.
 - **Respect module toggles.** If your addon listens to events, gate them with `this.context.modules.isEnabled(guildId)` so server admins can disable your addon per-guild.
 - **Keep dependencies minimal.** The core provides Discord.js, Drizzle ORM, and better-sqlite3. Only add what you truly need.
-- **Handle errors.** Never let unhandled errors leak out of your addon — the core isolates failures, but clean error handling is still expected.
+- **Handle errors.** Never let unhandled errors leak out of your addon - the core isolates failures, but clean error handling is still expected.
 
 ## Contributing to Core
 
@@ -79,14 +79,14 @@ Core changes affect every addon and every bot instance. Be careful and deliberat
 
 ### Architecture
 
-- **AddonManager** — lifecycle: discover, compile, load, enable, disable, reload
-- **CommandManager** — slash command registration and ownership tracking
-- **CommandGuard** — pre-execution checks (module toggle, guild-only, cooldown, permissions)
-- **ModuleManager** — per-guild addon enable/disable backed by the `disabled_modules` table
-- **EventBus** — routes Discord events to addon subscribers
-- **PermissionManager** — custom permission nodes with database overrides
-- **DatabaseManager** — SQLite (default) or MySQL, with Drizzle ORM
-- **AddonContext** — the injected context object every addon receives
+- **AddonManager** - lifecycle: discover, compile, load, enable, disable, reload
+- **CommandManager** - slash command registration and ownership tracking
+- **CommandGuard** - pre-execution checks (module toggle, guild-only, cooldown, permissions)
+- **ModuleManager** - per-guild addon enable/disable backed by the `disabled_modules` table
+- **EventBus** - routes Discord events to addon subscribers
+- **PermissionManager** - custom permission nodes with database overrides
+- **DatabaseManager** - SQLite (default) or MySQL, with Drizzle ORM
+- **AddonContext** - the injected context object every addon receives
 
 ### Adding a Core Table
 
@@ -98,9 +98,9 @@ Core changes affect every addon and every bot instance. Be careful and deliberat
 
 - TypeScript strict mode, CommonJS output (not ESM)
 - Use `chalk` v4 (CommonJS-compatible)
-- Cast Drizzle DB to `any` when the union type (`BetterSQLite3Database | MySql2Database`) prevents calling `.select()`, `.insert()`, etc. — this matches the existing pattern in `PermissionManager`
-- No unnecessary comments — code should be self-explanatory. Comments are for the *why*, not the *what*
-- No over-engineering — don't add abstractions for one-time operations
+- Cast Drizzle DB to `any` when the union type (`BetterSQLite3Database | MySql2Database`) prevents calling `.select()`, `.insert()`, etc. - this matches the existing pattern in `PermissionManager`
+- No unnecessary comments - code should be self-explanatory. Comments are for the *why*, not the *what*
+- No over-engineering - don't add abstractions for one-time operations
 
 ### Checklist
 
@@ -113,7 +113,7 @@ Before submitting a PR:
 
 ## Pull Requests
 
-- Keep PRs focused — one feature or fix per PR
+- Keep PRs focused - one feature or fix per PR
 - Write a clear description of what changed and why
 - Reference any related issues
 

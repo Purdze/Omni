@@ -48,7 +48,7 @@ export function register(context: AddonContext, tables: ModerationTables): void 
       }
 
       const fields = activeWarnings.slice(0, 25).map((w: any) => ({
-        name: `#${w.id} — <t:${Math.floor(w.createdAt / 1000)}:R>`,
+        name: `#${w.id} - <t:${Math.floor(w.createdAt / 1000)}:R>`,
         value: `**Reason:** ${w.reason ?? 'No reason'}\n**By:** <@${w.moderatorId}>`,
       }));
 

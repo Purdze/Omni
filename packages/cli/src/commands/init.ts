@@ -28,7 +28,7 @@ export function registerInitCommand(program: Command): void {
     .action(() => {
       const root = process.cwd();
 
-      console.log(chalk.blue.bold('\n  Omni — Initializing project...\n'));
+      console.log(chalk.blue.bold('\n  Omni - Initializing project...\n'));
 
       const dirs = [
         'addons',
@@ -56,7 +56,7 @@ export function registerInitCommand(program: Command): void {
             '# Discord Application ID (required)',
             'DISCORD_CLIENT_ID=your-client-id-here',
             '',
-            '# Guild ID for development (optional — deploys commands instantly to this guild)',
+            '# Guild ID for development (optional - deploys commands instantly to this guild)',
             'DISCORD_DEV_GUILD_ID=',
             '',
             '# Log level: debug | info | warn | error',

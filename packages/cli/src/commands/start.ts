@@ -17,11 +17,11 @@ export function registerStartCommand(program: Command): void {
       if (options.dev) {
         command = 'tsx';
         args = [path.resolve(root, 'packages', 'core', 'src', 'index.ts')];
-        console.log(chalk.blue.bold('\n  Omni — Starting in development mode...\n'));
+        console.log(chalk.blue.bold('\n  Omni - Starting in development mode...\n'));
       } else {
         command = 'node';
         args = [path.resolve(root, 'packages', 'core', 'dist', 'index.js')];
-        console.log(chalk.blue.bold('\n  Omni — Starting bot...\n'));
+        console.log(chalk.blue.bold('\n  Omni - Starting bot...\n'));
       }
 
       const child: ChildProcess = spawn(command, args, {

@@ -28,7 +28,7 @@ function confirm(rl: readline.Interface, question: string): Promise<boolean> {
 }
 
 async function promptForOptions(rl: readline.Interface): Promise<AddonOptions> {
-  console.log(chalk.blue.bold('\n  Omni — Create a new addon\n'));
+  console.log(chalk.blue.bold('\n  Omni - Create a new addon\n'));
 
   const id = await prompt(rl, '  Addon ID (kebab-case)', '');
   if (!id) {

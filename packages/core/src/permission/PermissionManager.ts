@@ -26,7 +26,7 @@ export class PermissionManager {
   define(definition: PermissionDefinition): void {
     if (this.definitions.has(definition.id)) {
       this.logger.warn(
-        `Permission node "${definition.id}" is already defined — overwriting.`,
+        `Permission node "${definition.id}" is already defined - overwriting.`,
       );
     }
     this.definitions.set(definition.id, definition);
@@ -70,7 +70,7 @@ export class PermissionManager {
     const definition = this.definitions.get(permissionId);
     if (!definition) {
       this.logger.warn(
-        `Permission check for undefined node "${permissionId}" — denying by default.`,
+        `Permission check for undefined node "${permissionId}" - denying by default.`,
       );
       return false;
     }

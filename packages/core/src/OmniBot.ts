@@ -245,7 +245,7 @@ export class OmniBot {
           const disabledSet = new Set(await this.moduleManager.getDisabledModules(guildId));
           const lines = allAddons.map((a) => {
             const status = disabledSet.has(a.manifest.id) ? '\u274c Disabled' : '\u2705 Enabled';
-            return `**${a.manifest.name}** (\`${a.manifest.id}\`) — ${status}`;
+            return `**${a.manifest.name}** (\`${a.manifest.id}\`) - ${status}`;
           });
 
           const embed = this.embedFactory.info(
@@ -411,7 +411,7 @@ export class OmniBot {
 
     if (code === 4013 || /invalid intents/i.test(msg)) {
       hint('The bot requested invalid gateway intents.', [
-        'This is likely a bug in Omni — please report it at https://github.com/your-org/omni/issues',
+        'This is likely a bug in Omni - please report it at https://github.com/your-org/omni/issues',
         'As a workaround, check that your discord.js version is up to date: pnpm update discord.js',
       ]);
     }
@@ -425,7 +425,7 @@ export class OmniBot {
     }
 
     if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') {
-      hint('Could not reach Discord — DNS resolution failed.', [
+      hint('Could not reach Discord - DNS resolution failed.', [
         'Check your internet connection',
         'If behind a proxy, set the HTTPS_PROXY environment variable',
         'Try again in a few moments',
@@ -433,16 +433,16 @@ export class OmniBot {
     }
 
     if (code === 'ECONNREFUSED' || code === 'ECONNRESET' || code === 'ETIMEDOUT') {
-      hint('Could not connect to Discord — the connection was refused or timed out.', [
+      hint('Could not connect to Discord - the connection was refused or timed out.', [
         'Check your internet connection and firewall settings',
-        'Discord may be experiencing an outage — check https://discordstatus.com',
+        'Discord may be experiencing an outage - check https://discordstatus.com',
         'If behind a proxy, set the HTTPS_PROXY environment variable',
       ]);
     }
 
     if (err?.status >= 500 || /50[0-9]/i.test(code?.toString() ?? '')) {
       hint('Discord returned a server error (5xx).', [
-        'Discord may be experiencing an outage — check https://discordstatus.com',
+        'Discord may be experiencing an outage - check https://discordstatus.com',
         'Wait a few minutes and try again',
       ]);
     }

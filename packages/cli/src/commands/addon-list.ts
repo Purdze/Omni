@@ -18,7 +18,7 @@ export function registerAddonListCommand(parent: Command): void {
       const root = process.cwd();
       const addonsDir = path.resolve(root, 'addons');
 
-      console.log(chalk.blue.bold('\n  Omni — Installed addons\n'));
+      console.log(chalk.blue.bold('\n  Omni - Installed addons\n'));
 
       if (!fs.existsSync(addonsDir)) {
         console.log(chalk.yellow('  No addons directory found. Run ') + chalk.cyan('omni init') + chalk.yellow(' first.\n'));
@@ -40,7 +40,7 @@ export function registerAddonListCommand(parent: Command): void {
         const manifestPath = path.resolve(addonsDir, dir.name, 'addon.manifest.json');
 
         if (!fs.existsSync(manifestPath)) {
-          console.log(chalk.yellow(`  Warning: ${dir.name}/ has no addon.manifest.json — skipping`));
+          console.log(chalk.yellow(`  Warning: ${dir.name}/ has no addon.manifest.json - skipping`));
           continue;
         }
 
@@ -54,7 +54,7 @@ export function registerAddonListCommand(parent: Command): void {
             description: manifest.description || '',
           });
         } catch {
-          console.log(chalk.red(`  Error: Failed to parse ${dir.name}/addon.manifest.json — skipping`));
+          console.log(chalk.red(`  Error: Failed to parse ${dir.name}/addon.manifest.json - skipping`));
         }
       }
 

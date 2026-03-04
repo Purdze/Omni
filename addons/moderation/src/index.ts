@@ -124,7 +124,7 @@ export default class ModerationAddon extends Addon {
     historyCmd.register(this.context, this.tables);
     modlogCmd.register(this.context, this.tables);
 
-    logger.info('Moderation addon loaded — 14 commands registered');
+    logger.info('Moderation addon loaded - 14 commands registered');
   }
 
   async onEnable(): Promise<void> {
@@ -198,7 +198,7 @@ export default class ModerationAddon extends Addon {
         await (channel as TextChannel).send({ embeds: [embed] });
       }
     } catch {
-      // Channel may have been deleted or bot lacks access — non-critical
+      // Channel may have been deleted or bot lacks access - non-critical
     }
   }
 

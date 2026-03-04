@@ -14,7 +14,7 @@ export function register(context: AddonContext, _tables: unknown, helpers: Helpe
       .setName('mute')
       .setDescription('Mute a user (Discord timeout)')
       .addUserOption(opt => opt.setName('user').setDescription('User to mute').setRequired(true))
-      .addStringOption(opt => opt.setName('duration').setDescription('Duration (e.g. 1h, 30m, 7d — max 28 days)').setRequired(true))
+      .addStringOption(opt => opt.setName('duration').setDescription('Duration (e.g. 1h, 30m, 7d - max 28 days)').setRequired(true))
       .addStringOption(opt => opt.setName('reason').setDescription('Reason for the mute')),
     permission: 'moderation.mute',
     execute: async (interaction: ChatInputCommandInteraction) => {

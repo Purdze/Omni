@@ -1,10 +1,10 @@
 # Omni
 
-A modular, addon-based Discord bot built with TypeScript. Every feature is a plugin — from moderation to economy to custom integrations. Think Bukkit/Spigot, but for Discord.
+A modular, addon-based Discord bot built with TypeScript. Every feature is a plugin - from moderation to economy to custom integrations. Think Bukkit/Spigot, but for Discord.
 
 ## Why Omni?
 
-Most Discord bots are monolithic — tightly coupled features, hard to extend, impossible to customize without forking. Omni is different:
+Most Discord bots are monolithic - tightly coupled features, hard to extend, impossible to customize without forking. Omni is different:
 
 - **Everything is an addon.** Core features ship as addons. Your custom features are addons. They all use the same API.
 - **Self-hosted.** You own your data. Run it on your own server with SQLite (default) or MySQL.
@@ -182,9 +182,9 @@ if (economy) {
 
 Server admins can enable or disable any addon per-guild using the built-in `/module` command:
 
-- `/module list` — see all modules and their status for the current server
-- `/module enable <name>` — enable a module
-- `/module disable <name>` — disable a module
+- `/module list` - see all modules and their status for the current server
+- `/module enable <name>` - enable a module
+- `/module disable <name>` - disable a module
 
 When a module is disabled, its commands are blocked in that guild. Addons can also self-gate their event handlers:
 
@@ -217,10 +217,10 @@ omni/
 
 ## Roadmap
 
-- [x] **Phase 1** — Core framework + addon API
-- [ ] **Phase 2** — Built-in addons (moderation, tickets, leveling, economy, giveaways, auto-mod, suggestions, welcome/leave, reaction roles, temp channels)
-- [ ] **Phase 3** — Premium modules (web dashboard, Minecraft integration, music, analytics)
-- [ ] **Phase 4** — Addon marketplace + documentation site
+- [x] **Phase 1** - Core framework + addon API
+- [ ] **Phase 2** - Built-in addons (moderation, tickets, leveling, economy, giveaways, auto-mod, suggestions, welcome/leave, reaction roles, temp channels)
+- [ ] **Phase 3** - Premium modules (web dashboard, Minecraft integration, music, analytics)
+- [ ] **Phase 4** - Addon marketplace + documentation site
 
 ## License
 

@@ -7,7 +7,7 @@
   "exported_at": "2026-03-04T00:00:00+00:00",
   "name": "Omni Discord Bot",
   "author": "omni@example.com",
-  "description": "A modular, addon-based Discord bot built with TypeScript. Every feature is a plugin — from moderation to economy to custom integrations.",
+  "description": "A modular, addon-based Discord bot built with TypeScript. Every feature is a plugin - from moderation to economy to custom integrations.",
   "features": null,
   "docker_images": {
     "Node.js 20": "ghcr.io/parkervcp/yolks:nodejs_20",
@@ -23,7 +23,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\napt update\napt install -y git curl\n\ncurl -fsSL https://get.pnpm.io/install.sh | sh -\nexport PNPM_HOME=\"/root/.local/share/pnpm\"\nexport PATH=\"$PNPM_HOME:$PATH\"\n\nif [ \"${USER_UPLOAD}\" == \"true\" ] || [ \"${USER_UPLOAD}\" == \"1\" ]; then\n    echo \"Skipping Git clone — using user-uploaded files.\"\nelse\n    if [ -z \"${GIT_REPO}\" ]; then\n        echo \"Error: No Git repository provided and USER_UPLOAD is not enabled.\"\n        exit 1\n    fi\n\n    if [ -d \"/mnt/server/.git\" ]; then\n        cd /mnt/server\n        git pull\n    else\n        git clone ${GIT_REPO} /mnt/server\n    fi\nfi\n\ncd /mnt/server\npnpm install --frozen-lockfile\npnpm build\n\nif [ ! -f \"/mnt/server/.env\" ] && [ -f \"/mnt/server/.env.example\" ]; then\n    cp /mnt/server/.env.example /mnt/server/.env\nfi\n\necho \"Installation complete.\"",
+      "script": "#!/bin/bash\napt update\napt install -y git curl\n\ncurl -fsSL https://get.pnpm.io/install.sh | sh -\nexport PNPM_HOME=\"/root/.local/share/pnpm\"\nexport PATH=\"$PNPM_HOME:$PATH\"\n\nif [ \"${USER_UPLOAD}\" == \"true\" ] || [ \"${USER_UPLOAD}\" == \"1\" ]; then\n    echo \"Skipping Git clone - using user-uploaded files.\"\nelse\n    if [ -z \"${GIT_REPO}\" ]; then\n        echo \"Error: No Git repository provided and USER_UPLOAD is not enabled.\"\n        exit 1\n    fi\n\n    if [ -d \"/mnt/server/.git\" ]; then\n        cd /mnt/server\n        git pull\n    else\n        git clone ${GIT_REPO} /mnt/server\n    fi\nfi\n\ncd /mnt/server\npnpm install --frozen-lockfile\npnpm build\n\nif [ ! -f \"/mnt/server/.env\" ] && [ -f \"/mnt/server/.env.example\" ]; then\n    cp /mnt/server/.env.example /mnt/server/.env\nfi\n\necho \"Installation complete.\"",
       "container": "ghcr.io/parkervcp/installers:debian",
       "entrypoint": "bash"
     }

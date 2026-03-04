@@ -38,7 +38,7 @@ export function register(context: AddonContext, tables: ModerationTables): void 
         const label = ACTION_LABELS[row.action] ?? row.action;
         const duration = row.duration ? ` (${formatDuration(row.duration)})` : '';
         return {
-          name: `#${row.id} ${label}${duration} — <t:${Math.floor(row.createdAt / 1000)}:R>`,
+          name: `#${row.id} ${label}${duration} - <t:${Math.floor(row.createdAt / 1000)}:R>`,
           value: `**Reason:** ${row.reason ?? 'No reason'}\n**By:** <@${row.moderatorId}>`,
         };
       });

@@ -37,9 +37,9 @@ type MyAddonAPI = {
 
 export default class MyAddon extends Addon {
 
-  // onLoad — called once after instantiation.
+  // onLoad - called once after instantiation.
   // Register commands, events, permissions, config, and DB schemas here.
-  // Do NOT start intervals or long-running processes — that's for onEnable.
+  // Do NOT start intervals or long-running processes - that's for onEnable.
   async onLoad(): Promise<void> {
     const { commands, config, permissions, logger } = this.context;
 
@@ -122,7 +122,7 @@ export default class MyAddon extends Addon {
     logger.info('My addon loaded');
   }
 
-  // onEnable — called after ALL addons are loaded.
+  // onEnable - called after ALL addons are loaded.
   // Safe to use inter-addon APIs here. Start intervals, watchers, etc.
   async onEnable(): Promise<void> {
     const { events, addons, logger } = this.context;
@@ -185,7 +185,7 @@ export default class MyAddon extends Addon {
     //     footer: 'My Addon',  // overrides default "Powered by Omni"
     //   });
     //
-    // Returns a standard EmbedBuilder — further chaining works too.
+    // Returns a standard EmbedBuilder - further chaining works too.
 
     // ── Database ────────────────────────────────────────────────────────
     // Omni supports both SQLite and MySQL. Use `context.db.driver` to
@@ -218,7 +218,7 @@ export default class MyAddon extends Addon {
     logger.info('My addon enabled');
   }
 
-  // onDisable — called when the addon is disabled or the bot shuts down.
+  // onDisable - called when the addon is disabled or the bot shuts down.
   // Events and commands are auto-cleaned by the core. Only clean up your own
   // resources here (intervals, external connections, etc).
   async onDisable(): Promise<void> {
