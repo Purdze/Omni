@@ -24,8 +24,15 @@ export interface BrandingConfig {
   footerText: string;
 }
 
+export interface PresenceConfig {
+  status: 'online' | 'idle' | 'dnd' | 'invisible';
+  activityType: 'Playing' | 'Listening' | 'Watching' | 'Competing';
+  activityText: string;
+}
+
 export interface BotConfig {
   branding: BrandingConfig;
+  presence: PresenceConfig;
 }
 
 export interface AddonConfigAccess<T extends Record<string, unknown> = Record<string, unknown>> {
@@ -33,8 +40,9 @@ export interface AddonConfigAccess<T extends Record<string, unknown> = Record<st
   get<K extends keyof T>(key: K): T[K];
   set<K extends keyof T>(key: K, value: T[K]): void;
   reset(): void;
+  seed(yaml: string): void;
 }
 
 export interface NamedConfigAccess {
-  get<T extends Record<string, unknown>>(name: string, defaults: T): AddonConfigAccess<T>;
+  get<T extends Record<string, unknown>>(name: string, defaults: T, seedYaml?: string): AddonConfigAccess<T>;
 }

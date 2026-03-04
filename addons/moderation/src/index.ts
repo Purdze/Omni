@@ -9,6 +9,7 @@ import {
   MYSQL_CREATE_ACTIONS, MYSQL_CREATE_TEMPBANS,
 } from './schema';
 
+import { CONFIG_SEED } from './utils/common';
 import * as slowmodeCmd from './commands/slowmode';
 import * as lockCmd from './commands/lock';
 import * as warnCmd from './commands/warn';
@@ -83,6 +84,7 @@ export default class ModerationAddon extends Addon {
   async onLoad(): Promise<void> {
     const { db, logger } = this.context;
 
+    this.context.config.seed(CONFIG_SEED);
     const cfg = this.context.config.getAll() as Record<string, unknown>;
     for (const [key, value] of Object.entries(CONFIG_DEFAULTS)) {
       if (!(key in cfg)) {
@@ -150,7 +152,6 @@ export default class ModerationAddon extends Addon {
     const config = this.context.config.getAll() as unknown as ModerationConfig;
     const intervalMs = (config.tempbanCheckInterval || 30) * 1000;
 
-    // Run immediately to catch expirations that occurred while bot was offline
     await this.checkTempbans();
 
     this.tempbanInterval = setInterval(() => {

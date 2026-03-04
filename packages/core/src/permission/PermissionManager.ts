@@ -1,16 +1,10 @@
 import type { Client, GuildMember } from 'discord.js';
-import { PermissionsBitField } from 'discord.js';
 import { eq, and } from 'drizzle-orm';
 import type { PermissionDefinition, PermissionAccessor } from '../types/permission';
 import type { AddonLogger } from '../types/addon';
 import type { DatabaseManager } from '../database/DatabaseManager';
 import { getCoreSchema } from '../database/schema';
 
-/**
- * Resolution order: database overrides (grant/deny per role) -> default
- * Discord permissions from the PermissionDefinition -> server owners and
- * administrators always pass.
- */
 export class PermissionManager {
   private readonly client: Client;
   private readonly dbManager: DatabaseManager;
@@ -45,19 +39,17 @@ export class PermissionManager {
     }
 
     if (guild.ownerId === userId) return true;
-    if (member.permissions.has(PermissionsBitField.Flags.Administrator)) return true;
 
-    const db = this.dbManager.getDb();
-    const { permissions } = getCoreSchema(this.dbManager.driver);
+    const { db, table } = this.getPermissionsTable();
     const memberRoleIds = member.roles.cache.map((r) => r.id);
 
-    const overrides = await (db as any)
+    const overrides = await db
       .select()
-      .from(permissions)
+      .from(table)
       .where(
         and(
-          eq(permissions.guildId, guildId),
-          eq(permissions.permissionNode, permissionId),
+          eq(table.guildId, guildId),
+          eq(table.permissionNode, permissionId),
         ),
       );
 
@@ -110,12 +102,60 @@ export class PermissionManager {
     };
   }
 
+  async grant(guildId: string, roleId: string, node: string): Promise<void> {
+    await this.upsertOverride(guildId, roleId, node, true);
+  }
+
+  async deny(guildId: string, roleId: string, node: string): Promise<void> {
+    await this.upsertOverride(guildId, roleId, node, false);
+  }
+
+  async reset(guildId: string, roleId: string, node: string): Promise<void> {
+    const { db, table } = this.getPermissionsTable();
+    await db
+      .delete(table)
+      .where(
+        and(
+          eq(table.guildId, guildId),
+          eq(table.roleId, roleId),
+          eq(table.permissionNode, node),
+        ),
+      );
+  }
+
+  async listOverrides(guildId: string, roleId?: string): Promise<Array<{ roleId: string; permissionNode: string; granted: boolean }>> {
+    const { db, table } = this.getPermissionsTable();
+    const conditions = [eq(table.guildId, guildId)];
+    if (roleId) conditions.push(eq(table.roleId, roleId));
+
+    return db
+      .select({
+        roleId: table.roleId,
+        permissionNode: table.permissionNode,
+        granted: table.granted,
+      })
+      .from(table)
+      .where(and(...conditions));
+  }
+
   removeAllForAddon(addonId: string): void {
     for (const [id] of this.definitions) {
       if (id.startsWith(`${addonId}.`)) {
         this.definitions.delete(id);
       }
     }
+  }
+
+  private async upsertOverride(guildId: string, roleId: string, node: string, granted: boolean): Promise<void> {
+    await this.reset(guildId, roleId, node);
+    const { db, table } = this.getPermissionsTable();
+    await db.insert(table).values({ guildId, roleId, permissionNode: node, granted });
+  }
+
+  private getPermissionsTable() {
+    const db = this.dbManager.getDb() as any;
+    const { permissions: table } = getCoreSchema(this.dbManager.driver);
+    return { db, table };
   }
 
   private resolveId(addonId: string, rawId: string): string {

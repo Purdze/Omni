@@ -61,6 +61,31 @@ export const MESSAGE_DEFAULTS: ModerationMessages = {
   dmFailed: '\n*Could not DM user.*',
 };
 
+export const CONFIG_SEED = `# Send a DM to the user when a moderation action is taken on them
+dmOnAction: true
+
+# Default reason used when a moderator doesn't provide one
+defaultReason: No reason provided
+
+# How often (in seconds) to check for expired tempbans
+tempbanCheckInterval: 30
+
+# Max number of days of messages to delete when banning (1-7)
+maxDeleteDays: 7
+
+# Channel ID to send moderation log messages to (leave empty to disable)
+logChannelId: ""
+
+# Auto-punish after this many warnings (0 to disable)
+warnThreshold: 0
+
+# Action to take when warn threshold is reached (mute, kick, ban, tempban)
+warnThresholdAction: mute
+
+# Duration for the threshold action if it supports one (e.g. 1h, 7d)
+warnThresholdDuration: 1h
+`;
+
 export interface Helpers {
   insertAction(values: ActionInsert): Promise<number>;
   sendModLog(guildId: string, title: string, fields: { name: string; value: string; inline?: boolean }[], color: 'warning' | 'info'): Promise<void>;

@@ -4,6 +4,7 @@ import {
   Events,
   SlashCommandBuilder,
   PermissionFlagsBits,
+  ActivityType,
   type Interaction,
 } from 'discord.js';
 import { Logger } from './logger/Logger';
@@ -33,6 +34,7 @@ export class OmniBot {
   private commandGuard!: CommandGuard;
   private embedFactory!: EmbedFactory;
   private moduleManager!: ModuleManager;
+  private permissionManager!: PermissionManager;
   private commandLog!: ReturnType<Logger['createLogger']>;
   private readonly projectRoot: string;
 
@@ -93,7 +95,7 @@ export class OmniBot {
       this.logger.createLogger('CommandDeployer'),
     );
 
-    const permissionManager = new PermissionManager(
+    this.permissionManager = new PermissionManager(
       this.client,
       this.databaseManager,
       this.logger.createLogger('PermissionManager'),
@@ -111,7 +113,7 @@ export class OmniBot {
     );
 
     this.commandGuard = new CommandGuard(
-      permissionManager.createAccessor('core'),
+      this.permissionManager.createAccessor('core'),
       this.commandManager,
       this.moduleManager,
       this.logger.createLogger('CommandGuard'),
@@ -132,7 +134,7 @@ export class OmniBot {
       eventBus,
       commandManager: this.commandManager,
       commandDeployer,
-      permissionManager,
+      permissionManager: this.permissionManager,
       addonConfigManager,
       addonDatabase,
       databaseManager: this.databaseManager,
@@ -145,6 +147,7 @@ export class OmniBot {
     });
 
     this.registerModuleCommand();
+    this.registerPermissionsCommand();
 
     this.client.on(Events.InteractionCreate, (interaction) => {
       this.handleInteraction(interaction).catch((err) => {
@@ -154,6 +157,22 @@ export class OmniBot {
 
     this.client.once(Events.ClientReady, async (readyClient) => {
       log.info(`Logged in as ${readyClient.user.tag}`);
+
+      const activityTypeMap = {
+        Playing: ActivityType.Playing,
+        Listening: ActivityType.Listening,
+        Watching: ActivityType.Watching,
+        Competing: ActivityType.Competing,
+      } as const;
+
+      readyClient.user.setPresence({
+        status: botConfig.presence.status,
+        activities: [{
+          type: activityTypeMap[botConfig.presence.activityType] ?? ActivityType.Playing,
+          name: botConfig.presence.activityText,
+        }],
+      });
+
       await this.addonManager.startAll();
       log.info('Omni is ready!');
     });
@@ -288,6 +307,131 @@ export class OmniBot {
           .map((a) => ({ name: a.manifest.name, value: a.manifest.id }));
 
         await interaction.respond(choices);
+      },
+    });
+  }
+
+  private registerPermissionsCommand(): void {
+    const roleAddonNodeSubcommand = (name: string, description: string) =>
+      (sub: any) =>
+        sub
+          .setName(name)
+          .setDescription(description)
+          .addRoleOption((opt: any) =>
+            opt.setName('role').setDescription('The target role').setRequired(true),
+          )
+          .addStringOption((opt: any) =>
+            opt.setName('addon').setDescription('The addon that owns the permission').setRequired(true).setAutocomplete(true),
+          )
+          .addStringOption((opt: any) =>
+            opt.setName('node').setDescription('The permission node').setRequired(true).setAutocomplete(true),
+          );
+
+    const data = new SlashCommandBuilder()
+      .setName('permissions')
+      .setDescription('Manage permission overrides for roles')
+      .setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles)
+      .addSubcommand(roleAddonNodeSubcommand('grant', 'Grant a permission node to a role'))
+      .addSubcommand(roleAddonNodeSubcommand('deny', 'Deny a permission node for a role'))
+      .addSubcommand(roleAddonNodeSubcommand('reset', 'Remove a permission override for a role'))
+      .addSubcommand((sub) =>
+        sub
+          .setName('list')
+          .setDescription('List all permission overrides')
+          .addRoleOption((opt) =>
+            opt.setName('role').setDescription('Filter by role (optional)').setRequired(false),
+          ),
+      );
+
+    this.commandManager.register('core', {
+      data,
+      guildOnly: true,
+      execute: async (interaction) => {
+        const sub = interaction.options.getSubcommand();
+        const guildId = interaction.guild!.id;
+
+        if (sub === 'list') {
+          const role = interaction.options.getRole('role');
+          const overrides = await this.permissionManager.listOverrides(guildId, role?.id);
+
+          if (overrides.length === 0) {
+            const desc = role
+              ? `No permission overrides found for <@&${role.id}>.`
+              : 'No permission overrides found in this server.';
+            await interaction.reply({ embeds: [this.embedFactory.info('Permission Overrides', desc)], ephemeral: true });
+            return;
+          }
+
+          const lines = overrides.map(
+            (o) => `<@&${o.roleId}> - \`${o.permissionNode}\` - ${o.granted ? '\u2705 Granted' : '\u274c Denied'}`,
+          );
+          const embed = this.embedFactory.info(
+            'Permission Overrides',
+            lines.join('\n'),
+          );
+          await interaction.reply({ embeds: [embed], ephemeral: true });
+          return;
+        }
+
+        const role = interaction.options.getRole('role', true);
+        const addonId = interaction.options.getString('addon', true);
+        const nodeName = interaction.options.getString('node', true);
+        const fullNode = `${addonId}.${nodeName}`;
+
+        const definition = this.permissionManager.getDefinition(fullNode);
+        if (!definition) {
+          await interaction.reply({
+            embeds: [this.embedFactory.error('Invalid Node', `Permission node \`${fullNode}\` is not registered.`)],
+            ephemeral: true,
+          });
+          return;
+        }
+
+        const actions: Record<string, { action: () => Promise<void>; embed: () => ReturnType<EmbedFactory['success']> }> = {
+          grant: {
+            action: () => this.permissionManager.grant(guildId, role.id, fullNode),
+            embed: () => this.embedFactory.success('Permission Granted', `Granted \`${fullNode}\` to <@&${role.id}>.`),
+          },
+          deny: {
+            action: () => this.permissionManager.deny(guildId, role.id, fullNode),
+            embed: () => this.embedFactory.warning('Permission Denied', `Denied \`${fullNode}\` for <@&${role.id}>.`),
+          },
+          reset: {
+            action: () => this.permissionManager.reset(guildId, role.id, fullNode),
+            embed: () => this.embedFactory.info('Permission Reset', `Removed override for \`${fullNode}\` on <@&${role.id}>.`),
+          },
+        };
+
+        const { action, embed } = actions[sub]!;
+        await action();
+        await interaction.reply({ embeds: [embed()], ephemeral: true });
+      },
+      autocomplete: async (interaction) => {
+        const focused = interaction.options.getFocused(true);
+        const allDefs = this.permissionManager.getDefinitions();
+
+        if (focused.name === 'addon') {
+          const addonIds = [...new Set(allDefs.map((d) => d.id.split('.')[0]))];
+          const filtered = addonIds
+            .filter((id) => id.toLowerCase().includes(focused.value.toLowerCase()))
+            .slice(0, 25)
+            .map((id) => ({ name: id, value: id }));
+          await interaction.respond(filtered);
+        } else if (focused.name === 'node') {
+          const selectedAddon = interaction.options.getString('addon') ?? '';
+          const filtered = allDefs
+            .filter((d) => d.id.startsWith(`${selectedAddon}.`))
+            .filter((d) => {
+              const shortName = d.id.slice(selectedAddon.length + 1);
+              return shortName.toLowerCase().includes(focused.value.toLowerCase());
+            })
+            .slice(0, 25)
+            .map((d) => {
+              const shortName = d.id.slice(selectedAddon.length + 1);
+              return { name: `${shortName} - ${d.description}`, value: shortName };
+            });
+          await interaction.respond(filtered);
+        }
       },
     });
   }

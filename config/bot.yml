@@ -5,3 +5,11 @@ branding:
   color: "#5865F2"
   # Footer text shown on all embeds
   footerText: "Powered by Omni"
+
+presence:
+  # Bot status: online, idle, dnd, invisible
+  status: online
+  # Activity type: Playing, Listening, Watching, Competing
+  activityType: Watching
+  # Activity text shown after the type (e.g. "Playing omnibot.dev")
+  activityText: "omnibot.dev"

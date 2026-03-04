@@ -22,8 +22,8 @@ export class AddonConfigManager {
 
   createNamedAccess(addonId: string): NamedConfigAccess {
     return {
-      get: <T extends Record<string, unknown>>(name: string, defaults: T): AddonConfigAccess<T> => {
-        return this.buildAccess(addonId, name, defaults);
+      get: <T extends Record<string, unknown>>(name: string, defaults: T, seedYaml?: string): AddonConfigAccess<T> => {
+        return this.buildAccess(addonId, name, defaults, seedYaml);
       },
     };
   }
@@ -32,9 +32,10 @@ export class AddonConfigManager {
     addonId: string,
     name: string,
     defaults: T,
+    seedYaml?: string,
   ): AddonConfigAccess<T> {
     const filePath = this.getConfigPath(addonId, name);
-    let config = this.load(addonId, name, filePath, defaults);
+    let config = this.load(addonId, name, filePath, defaults, seedYaml);
 
     return {
       getAll: (): T => ({ ...config }),
@@ -48,6 +49,13 @@ export class AddonConfigManager {
         this.persist(filePath, config);
         this.logger.info(`Config "${name}" for addon "${addonId}" reset to defaults`);
       },
+      seed: (yaml: string): void => {
+        if (Object.keys(config).length === 0) {
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          fs.writeFileSync(filePath, yaml, 'utf-8');
+          config = YAML.parse(yaml) as T;
+        }
+      },
     };
   }
 
@@ -56,10 +64,17 @@ export class AddonConfigManager {
     name: string,
     filePath: string,
     defaults: T,
+    seedYaml?: string,
   ): T {
     fs.mkdirSync(path.dirname(filePath), { recursive: true });
 
     if (!fs.existsSync(filePath)) {
+      if (seedYaml) {
+        fs.writeFileSync(filePath, seedYaml, 'utf-8');
+        this.logger.debug(`Created config "${name}" for addon "${addonId}" from seed`);
+        const parsed = YAML.parse(seedYaml) as Record<string, unknown>;
+        return this.deepMerge(this.deepClone(defaults) as Record<string, unknown>, parsed) as T;
+      }
       this.persist(filePath, defaults);
       this.logger.debug(`Created default config "${name}" for addon "${addonId}"`);
       return this.deepClone(defaults);
@@ -94,7 +109,20 @@ export class AddonConfigManager {
 
   private persist(filePath: string, data: Record<string, unknown>): void {
     try {
-      fs.writeFileSync(filePath, YAML.stringify(data, { indent: 2 }), 'utf-8');
+      let doc: YAML.Document;
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf-8');
+        doc = YAML.parseDocument(raw);
+        for (const [key, value] of Object.entries(data)) {
+          doc.setIn([key], value);
+        }
+      } else {
+        doc = new YAML.Document(data);
+      }
+      if (YAML.isMap(doc.contents)) {
+        doc.contents.flow = false;
+      }
+      fs.writeFileSync(filePath, doc.toString({ indent: 2 }), 'utf-8');
     } catch (error) {
       this.logger.error(`Failed to write config to ${filePath}`, error as Error);
     }

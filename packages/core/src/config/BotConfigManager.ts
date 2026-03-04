@@ -8,6 +8,11 @@ const DEFAULTS: BotConfig = {
     color: '#5865F2',
     footerText: 'Powered by Omni',
   },
+  presence: {
+    status: 'online',
+    activityType: 'Playing',
+    activityText: 'omnibot.dev',
+  },
 };
 
 const SEED_YAML = `# Omni Bot Configuration
@@ -17,6 +22,14 @@ branding:
   color: "${DEFAULTS.branding.color}"
   # Footer text shown on all embeds
   footerText: "${DEFAULTS.branding.footerText}"
+
+presence:
+  # Bot status: online, idle, dnd, invisible
+  status: ${DEFAULTS.presence.status}
+  # Activity type: Playing, Listening, Watching, Competing
+  activityType: ${DEFAULTS.presence.activityType}
+  # Activity text shown after the type (e.g. "Playing omnibot.dev")
+  activityText: "${DEFAULTS.presence.activityText}"
 `;
 
 export class BotConfigManager {
@@ -43,6 +56,11 @@ export class BotConfigManager {
           color: parsed?.branding?.color ?? DEFAULTS.branding.color,
           footerText: parsed?.branding?.footerText ?? DEFAULTS.branding.footerText,
         },
+        presence: {
+          status: parsed?.presence?.status ?? DEFAULTS.presence.status,
+          activityType: parsed?.presence?.activityType ?? DEFAULTS.presence.activityType,
+          activityText: parsed?.presence?.activityText ?? DEFAULTS.presence.activityText,
+        },
       };
     } catch {
       return this.cloneDefaults();
@@ -50,6 +68,9 @@ export class BotConfigManager {
   }
 
   private cloneDefaults(): BotConfig {
-    return { branding: { ...DEFAULTS.branding } };
+    return {
+      branding: { ...DEFAULTS.branding },
+      presence: { ...DEFAULTS.presence },
+    };
   }
 }
