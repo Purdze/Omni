@@ -1,0 +1,16 @@
+{
+  "id": "welcome",
+  "name": "Welcome/Leave",
+  "version": "1.0.0",
+  "description": "Customizable welcome and leave messages, auto-roles, and member count channels",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "welcome.manage",
+      "description": "Manage welcome/leave settings, auto-roles, and member count channel",
+      "defaultDiscordPermissions": ["ManageGuild"]
+    }
+  ]
+}

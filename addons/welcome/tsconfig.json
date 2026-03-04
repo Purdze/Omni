@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.addon.json",
+  "compilerOptions": {
+    "outDir": ".omni-cache",
+    "rootDir": "src"
+  },
+  "include": ["src/**/*"]
+}
