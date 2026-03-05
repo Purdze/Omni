@@ -35,6 +35,11 @@ Thumbs.db
 *.swo
 .vscode/settings.json
 
-
 # Docker
 docker-compose.override.yml
+
+# Scripts
+scripts/
+
+# Docs (separate repo)
+docs/

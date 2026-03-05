@@ -1,0 +1,16 @@
+{
+  "id": "leveling",
+  "name": "Leveling",
+  "version": "1.0.0",
+  "description": "XP system with level-up roles, leaderboards, and customizable XP rates",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "leveling.manage",
+      "description": "Manage XP, set levels, and configure role rewards",
+      "defaultDiscordPermissions": ["ManageGuild"]
+    }
+  ]
+}

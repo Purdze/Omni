@@ -1,0 +1,16 @@
+{
+  "id": "reaction-roles",
+  "name": "Reaction Roles",
+  "version": "1.0.0",
+  "description": "Self-assign roles via buttons on staff-created panel messages",
+  "author": "Omni",
+  "main": "index.ts",
+  "dependencies": [],
+  "permissions": [
+    {
+      "id": "reaction-roles.manage",
+      "description": "Create and manage reaction role panels",
+      "defaultDiscordPermissions": ["ManageRoles"]
+    }
+  ]
+}

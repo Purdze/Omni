@@ -1,6 +1,6 @@
 {
   "name": "omni",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "description": "Modular, addon-based Discord bot",
   "license": "AGPL-3.0",
@@ -8,7 +8,8 @@
     "build": "pnpm -r build",
     "postinstall": "pnpm -r build && cd packages/cli && pnpm link --global || echo '[omni] Could not link CLI globally. Run \"pnpm setup\" then \"cd packages/cli && pnpm link --global\" manually.'",
     "start": "node packages/core/dist/index.js",
-    "dev": "tsx packages/core/src/index.ts"
+    "dev": "tsx packages/core/src/index.ts",
+    "release": "bash scripts/release.sh"
   },
   "dependencies": {
     "@omni/core": "workspace:*",

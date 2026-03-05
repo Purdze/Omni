@@ -270,6 +270,14 @@ omni/
 └── docker-compose.yml
 ```
 
+## Documentation
+
+Full documentation is available at [omnibot.dev](https://omnibot.dev) or can be built locally:
+
+```bash
+cd docs && pnpm install && pnpm dev
+```
+
 ## Roadmap
 
 - [x] **Phase 1** - Core framework + addon API
